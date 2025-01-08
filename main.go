@@ -22,9 +22,9 @@ func generateSVG(lines []string) string {
 	face := fontFamily.Face(44, canvas.FontRegular, canvas.FontNormal)
 
 	// Calculate the total canvas height based on the number of lines
-	lineHeight := 50.0                            // Adjust as needed for line spacing
+	lineHeight := 25.0                            // Adjust as needed for line spacing
 	height := float64(len(lines))*lineHeight + 40 // Add extra padding
-	width := 400.0                                // Fixed width, adjust if necessary
+	width := 200.0                                // Fixed width, adjust if necessary
 
 	// Create a new canvas with dynamic width and height
 	c := canvas.New(width, height)
