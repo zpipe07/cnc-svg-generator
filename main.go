@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	_ "embed"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -13,7 +14,7 @@ import (
 //go:embed fonts/Bungee-Regular.ttf
 var bungeeFont []byte
 
-func generateSVG(lines []string) string {
+func generateSVG(lines []string, shape string) string {
 	fontFamily := canvas.NewFontFamily("Bungee")
 	err := fontFamily.LoadFont(bungeeFont, 0, canvas.FontRegular)
 	if err != nil {
@@ -26,25 +27,33 @@ func generateSVG(lines []string) string {
 	height := float64(len(lines))*lineHeight + 40 // Add extra padding
 	width := 200.0                                // Fixed width, adjust if necessary
 
+	log.Println("Canvas width: ", width)
+	log.Println("Canvas height: ", height)
+
 	// Create a new canvas with dynamic width and height
 	c := canvas.New(width, height)
 	ctx := canvas.NewContext(c)
 
-	// Calculate dimensions of the single rounded rectangle
-	rectX := 10.0
-	rectY := 10.0
-	rectWidth := width - 20.0
-	rectHeight := height - 20.0
-
-	// Draw the single rounded rectangle
-	rectPath := canvas.RoundedRectangle(rectWidth, rectHeight, 10)
-	rectPath = rectPath.Translate(rectX, rectY)
+	// Draw the appropriate shape around the text
 	ctx.SetStrokeColor(canvas.Black)
 	ctx.SetStrokeWidth(1)
 	ctx.SetFillColor(canvas.White)
-	ctx.DrawPath(0, 0, rectPath)
 
-	// Draw each line of text inside the rectangle
+	if shape == "ellipse" {
+		ellipsePath := canvas.Ellipse(width/2, height/2)
+		// ellipsePath = ellipsePath.Translate(100, 50)
+		ellipsePath = ellipsePath.Translate(width/2, height/2)
+		ctx.DrawPath(0, 0, ellipsePath)
+	} else if shape == "rectangle" {
+		// Default to rectangle if shape is not "ellipse"
+		rectPath := canvas.RoundedRectangle(width, height, 10)
+		rectPath = rectPath.Translate(0, 0)
+		ctx.DrawPath(0, 0, rectPath)
+	} else {
+		panic("Invalid shape: " + shape)
+	}
+
+	// Draw each line of text inside the shape
 	ctx.SetFillColor(canvas.Black)
 	for i, line := range lines {
 		textPath, _, err := face.ToPath(line)
@@ -72,9 +81,11 @@ func main() {
 
 	r.GET("/svg", func(c *gin.Context) {
 		text := c.QueryArray("text")
-		svgContent := generateSVG(text)
+		shape := c.DefaultQuery("shape", "rectangle")
+		log.Println("Shape: ", shape)
+		svgContent := generateSVG(text, shape)
 		c.Data(http.StatusOK, "image/svg+xml", []byte(svgContent))
 	})
 
-	r.Run(":8080") // Start the server on port 8080
+	r.Run("localhost:8080") // Start the server on port 8080
 }
