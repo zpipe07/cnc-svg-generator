@@ -17,6 +17,9 @@ var bungeeFont []byte
 //go:embed fonts/Limelight-Regular.ttf
 var limelightFont []byte
 
+var backgroundColor = canvas.White
+var foregroundColor = canvas.Black
+
 func loadFontFamily(font string) *canvas.FontFamily {
 	var fontFamily *canvas.FontFamily
 	switch font {
@@ -38,11 +41,31 @@ func loadFontFamily(font string) *canvas.FontFamily {
 	return fontFamily
 }
 
+func drawEllipse(ctx *canvas.Context, width float64, height float64) {
+	ctx.SetFillColor(backgroundColor)
+	outerEdge := canvas.Ellipse(width/2, height/2)
+	outerEdge = outerEdge.Translate(width/2, height/2)
+	ctx.DrawPath(0, 0, outerEdge)
+
+	ctx.SetFillColor(foregroundColor)
+	roundedEdge := canvas.Ellipse(width/2-0.2, height/2-0.2)
+	roundedEdge = roundedEdge.Translate(width/2, height/2)
+	ctx.DrawPath(0, 0, roundedEdge)
+
+	ctx.SetFillColor(backgroundColor)
+	borderOuter := canvas.Ellipse(width/2-0.5, height/2-0.5)
+	borderOuter = borderOuter.Translate(width/2, height/2)
+	ctx.DrawPath(0, 0, borderOuter)
+
+	ctx.SetFillColor(foregroundColor)
+	borderInner := canvas.Ellipse(width/2-0.7, height/2-0.7)
+	borderInner = borderInner.Translate(width/2, height/2)
+	ctx.DrawPath(0, 0, borderInner)
+}
+
 func drawShape(ctx *canvas.Context, width float64, height float64, shape string) {
 	if shape == "ellipse" {
-		ellipsePath := canvas.Ellipse(width/2, height/2)
-		ellipsePath = ellipsePath.Translate(width/2, height/2)
-		ctx.DrawPath(0, 0, ellipsePath)
+		drawEllipse(ctx, width, height)
 	} else if shape == "rectangle" {
 		rectPath := canvas.RoundedRectangle(width, height, 0.25)
 		rectPath = rectPath.Translate(0, 0)
@@ -61,10 +84,39 @@ func drawShape(ctx *canvas.Context, width float64, height float64, shape string)
 				log.Printf("Failed to parse SVG path: %s", err)
 				continue // Skip invalid paths
 			}
+			transform := canvas.Identity.
+				Scale(1, -1).         // Flip Y-axis
+				Translate(0, -height) // Move the path upwards to stay visible
+			decoPath = decoPath.Transform(transform)
 			ctx.DrawPath(0, 0, decoPath)
 		}
 	} else {
 		panic("Invalid shape: " + shape)
+	}
+}
+
+func drawText(ctx *canvas.Context, lines []string, fontFamily *canvas.FontFamily, width float64, height float64) {
+
+	yOffset := 0.75
+
+	ctx.SetFillColor(backgroundColor)
+
+	// Draw each line of text inside the shape
+	for i, line := range lines {
+		fontSize := 11 - float64(len(line))*0.75
+
+		face := fontFamily.Face(fontSize, canvas.FontRegular, canvas.FontNormal)
+		textPath, _, err := face.ToPath(line)
+		if err != nil {
+			panic("Failed to convert text to path: " + err.Error())
+		}
+		textBounds := textPath.Bounds()
+		lineHeight := textBounds.H() + 0.5
+		startY := ((height - (float64(len(lines)) * lineHeight)) / 2) - yOffset
+		textX := (width - textBounds.W()) / 2
+		textY := startY + lineHeight*float64(i+1) - textBounds.H() // Center the text vertically
+		textPath = textPath.Translate(textX, textY)
+		ctx.DrawPath(0, 0, textPath)
 	}
 }
 
@@ -81,29 +133,11 @@ func generateSVG(lines []string, shape string, font string) string {
 
 	// Draw the appropriate shape around the text
 	ctx.SetStrokeColor(canvas.Black)
-	ctx.SetStrokeWidth(0.025)
+	ctx.SetStrokeWidth(0.0125)
 	ctx.SetFillColor(canvas.White)
 
 	drawShape(ctx, width, height, shape)
-
-	lineHeight := 3.0
-	startY := (height - (float64(len(lines)) * lineHeight)) / 2
-
-	// Draw each line of text inside the shape
-	for i, line := range lines {
-		fontSize := 10 - float64(len(line))*0.5
-
-		face := fontFamily.Face(fontSize, canvas.FontRegular, canvas.FontNormal)
-		textPath, _, err := face.ToPath(line)
-		if err != nil {
-			panic("Failed to convert text to path: " + err.Error())
-		}
-		textBounds := textPath.Bounds()
-		textX := (width - textBounds.W()) / 2
-		textY := startY + lineHeight*float64(i+1) - textBounds.H() // Center the text vertically
-		textPath = textPath.Translate(textX, textY)
-		ctx.DrawPath(0, 0, textPath)
-	}
+	drawText(ctx, lines, fontFamily, width, height)
 
 	// Export the canvas to an SVG
 	var buf bytes.Buffer
