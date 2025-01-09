@@ -58,7 +58,8 @@ func drawShape(ctx *canvas.Context, width float64, height float64, shape string)
 		for _, svgStr := range svgStr {
 			decoPath, err := canvas.ParseSVGPath(svgStr)
 			if err != nil {
-				panic("Failed to parse SVG path: " + err.Error())
+				log.Printf("Failed to parse SVG path: %s", err)
+				continue // Skip invalid paths
 			}
 			ctx.DrawPath(0, 0, decoPath)
 		}
@@ -85,10 +86,13 @@ func generateSVG(lines []string, shape string, font string) string {
 
 	drawShape(ctx, width, height, shape)
 
+	lineHeight := 3.0
+	startY := (height - (float64(len(lines)) * lineHeight)) / 2
+
 	// Draw each line of text inside the shape
 	for i, line := range lines {
 		fontSize := 10 - float64(len(line))*0.5
-		lineHeight := 3.0
+
 		face := fontFamily.Face(fontSize, canvas.FontRegular, canvas.FontNormal)
 		textPath, _, err := face.ToPath(line)
 		if err != nil {
@@ -96,7 +100,7 @@ func generateSVG(lines []string, shape string, font string) string {
 		}
 		textBounds := textPath.Bounds()
 		textX := (width - textBounds.W()) / 2
-		textY := lineHeight*float64(i) + lineHeight // Position each line below the previous
+		textY := startY + lineHeight*float64(i+1) - textBounds.H() // Center the text vertically
 		textPath = textPath.Translate(textX, textY)
 		ctx.DrawPath(0, 0, textPath)
 	}
@@ -127,6 +131,10 @@ func main() {
 		}
 		if font != "bungee" && font != "limelight" {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid font. Supported values are 'bungee' or 'limelight'."})
+			return
+		}
+		if len(text) == 0 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "The text parameter is required."})
 			return
 		}
 
