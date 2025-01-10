@@ -3,45 +3,39 @@ package main
 import (
 	"bytes"
 	_ "embed"
+	"errors"
+	"image/color"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/tdewolff/canvas"
 	"github.com/tdewolff/canvas/renderers/svg"
 )
 
+//go:embed fonts/ArbutusSlab-Regular.ttf
+var arbutusFont []byte
+
 //go:embed fonts/Bungee-Regular.ttf
 var bungeeFont []byte
+
+//go:embed fonts/Danfo-Regular.ttf
+var danfoFont []byte
 
 //go:embed fonts/Limelight-Regular.ttf
 var limelightFont []byte
 
-var backgroundColor = canvas.White
-var foregroundColor = canvas.Black
+//go:embed fonts/Shrikhand-Regular.ttf
+var shrikhandFont []byte
 
-func loadFontFamily(font string) *canvas.FontFamily {
-	var fontFamily *canvas.FontFamily
-	switch font {
-	case "limelight":
-		fontFamily = canvas.NewFontFamily("Limelight")
-		if err := fontFamily.LoadFont(limelightFont, 0, canvas.FontRegular); err != nil {
-			log.Println("Failed to load Limelight font: ", err)
-			panic("Font loading error")
-		}
-	case "bungee":
-		fallthrough
-	default:
-		fontFamily = canvas.NewFontFamily("Bungee")
-		if err := fontFamily.LoadFont(bungeeFont, 0, canvas.FontRegular); err != nil {
-			log.Println("Failed to load Bungee font: ", err)
-			panic("Font loading error")
-		}
-	}
-	return fontFamily
-}
-
-func drawEllipse(ctx *canvas.Context, width float64, height float64) {
+func drawEllipse(
+	ctx *canvas.Context,
+	width float64,
+	height float64,
+	foregroundColor color.RGBA,
+	backgroundColor color.RGBA,
+) {
 	ctx.SetFillColor(backgroundColor)
 	outerEdge := canvas.Ellipse(width/2, height/2)
 	outerEdge = outerEdge.Translate(width/2, height/2)
@@ -63,9 +57,16 @@ func drawEllipse(ctx *canvas.Context, width float64, height float64) {
 	ctx.DrawPath(0, 0, borderInner)
 }
 
-func drawShape(ctx *canvas.Context, width float64, height float64, shape string) {
+func drawShape(
+	ctx *canvas.Context,
+	width float64,
+	height float64,
+	shape string,
+	foregroundColor color.RGBA,
+	backgroundColor color.RGBA,
+) {
 	if shape == "ellipse" {
-		drawEllipse(ctx, width, height)
+		drawEllipse(ctx, width, height, foregroundColor, backgroundColor)
 	} else if shape == "rectangle" {
 		rectPath := canvas.RoundedRectangle(width, height, 0.25)
 		rectPath = rectPath.Translate(0, 0)
@@ -95,9 +96,17 @@ func drawShape(ctx *canvas.Context, width float64, height float64, shape string)
 	}
 }
 
-func drawText(ctx *canvas.Context, lines []string, fontFamily *canvas.FontFamily, width float64, height float64) {
+func drawText(
+	ctx *canvas.Context,
+	lines []string,
+	fontFamily *canvas.FontFamily,
+	width float64,
+	height float64,
+	foregroundColor color.RGBA,
+	backgroundColor color.RGBA,
+) {
 
-	yOffset := 0.75
+	yOffset := 0.0
 
 	ctx.SetFillColor(backgroundColor)
 
@@ -111,7 +120,7 @@ func drawText(ctx *canvas.Context, lines []string, fontFamily *canvas.FontFamily
 			panic("Failed to convert text to path: " + err.Error())
 		}
 		textBounds := textPath.Bounds()
-		lineHeight := textBounds.H() + 0.5
+		lineHeight := textBounds.H() + 0.75
 		startY := ((height - (float64(len(lines)) * lineHeight)) / 2) - yOffset
 		textX := (width - textBounds.W()) / 2
 		textY := startY + lineHeight*float64(i+1) - textBounds.H() // Center the text vertically
@@ -120,24 +129,26 @@ func drawText(ctx *canvas.Context, lines []string, fontFamily *canvas.FontFamily
 	}
 }
 
-func generateSVG(lines []string, shape string, font string) string {
+func generateSVG(
+	lines []string,
+	shape string,
+	fontFamily *canvas.FontFamily,
+	foregroundColor color.RGBA,
+	backgroundColor color.RGBA,
+) string {
 	// Hardcoded dimensions in inches
 	width := 15.0
 	height := 11.0
-
-	fontFamily := loadFontFamily(font)
 
 	// Create a new canvas with dynamic width and height
 	c := canvas.New(width, height)
 	ctx := canvas.NewContext(c)
 
 	// Draw the appropriate shape around the text
-	ctx.SetStrokeColor(canvas.Black)
 	ctx.SetStrokeWidth(0.0125)
-	ctx.SetFillColor(canvas.White)
 
-	drawShape(ctx, width, height, shape)
-	drawText(ctx, lines, fontFamily, width, height)
+	drawShape(ctx, width, height, shape, foregroundColor, backgroundColor)
+	drawText(ctx, lines, fontFamily, width, height, foregroundColor, backgroundColor)
 
 	// Export the canvas to an SVG
 	var buf bytes.Buffer
@@ -151,20 +162,94 @@ func generateSVG(lines []string, shape string, font string) string {
 	return buf.String()
 }
 
+func parseColor(color string) (color.RGBA, error) {
+	switch strings.ToLower(color) {
+	case "white":
+		return canvas.White, nil
+	case "black":
+		return canvas.Black, nil
+	case "red":
+		return canvas.Red, nil
+	case "blue":
+		return canvas.Blue, nil
+	case "green":
+		return canvas.Green, nil
+	case "brown":
+		return canvas.Brown, nil
+	case "tan":
+		return canvas.Tan, nil
+	default:
+		return canvas.White, errors.New("invalid color")
+	}
+}
+
+func parseFontFamily(fontFamilyStr string) (*canvas.FontFamily, error) {
+	var fontFamily *canvas.FontFamily
+	switch fontFamilyStr {
+	case "arbutus":
+		fontFamily = canvas.NewFontFamily("Arbutus")
+		if err := fontFamily.LoadFont(arbutusFont, 0, canvas.FontRegular); err != nil {
+			log.Println("Failed to load Arbutus font: ", err)
+			panic("Font loading error")
+		}
+	case "danfo":
+		fontFamily = canvas.NewFontFamily("Danfo")
+		if err := fontFamily.LoadFont(danfoFont, 0, canvas.FontRegular); err != nil {
+			log.Println("Failed to load Danfo font: ", err)
+			panic("Font loading error")
+		}
+	case "shrikhand":
+		fontFamily = canvas.NewFontFamily("Shrikhand")
+		if err := fontFamily.LoadFont(shrikhandFont, 0, canvas.FontRegular); err != nil {
+			log.Println("Failed to load Shrikhand font: ", err)
+			panic("Font loading error")
+		}
+	case "limelight":
+		fontFamily = canvas.NewFontFamily("Limelight")
+		if err := fontFamily.LoadFont(limelightFont, 0, canvas.FontRegular); err != nil {
+			log.Println("Failed to load Limelight font: ", err)
+			panic("Font loading error")
+		}
+	case "bungee":
+		fallthrough
+	default:
+		fontFamily = canvas.NewFontFamily("Bungee")
+		if err := fontFamily.LoadFont(bungeeFont, 0, canvas.FontRegular); err != nil {
+			log.Println("Failed to load Bungee font: ", err)
+			panic("Font loading error")
+		}
+	}
+	return fontFamily, nil
+}
+
 func main() {
 	r := gin.Default()
 
 	r.GET("/svg", func(c *gin.Context) {
 		text := c.QueryArray("text")
 		shape := c.DefaultQuery("shape", "rectangle")
-		font := c.DefaultQuery("font", "bungee")
+		fontFamilyStr := c.Query("fontFamily")
+		bgColorStr := c.Query("backgroundColor")
+		fgColorStr := c.Query("foregroundColor")
 
-		if shape != "ellipse" && shape != "rectangle" && shape != "deco" {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid shape. Supported values are 'ellipse', 'rectangle', or 'deco'."})
+		// Parse colors
+		backgroundColor, err := parseColor(bgColorStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid backgroundColor. Supported values are 'white', 'black', 'red', 'blue', or 'green'."})
 			return
 		}
-		if font != "bungee" && font != "limelight" {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid font. Supported values are 'bungee' or 'limelight'."})
+		foregroundColor, err := parseColor(fgColorStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid foregroundColor. Supported values are 'white', 'black', 'red', 'blue', or 'green'."})
+			return
+		}
+		fontFamily, err := parseFontFamily(fontFamilyStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid fontFamily. Supported values are 'bungee' or 'limelight'."})
+			return
+		}
+		if shape != "ellipse" && shape != "rectangle" && shape != "deco" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid shape. Supported values are 'ellipse', 'rectangle', or 'deco'."})
 			return
 		}
 		if len(text) == 0 {
@@ -172,9 +257,7 @@ func main() {
 			return
 		}
 
-		log.Printf("Shape: %s, Font: %s", shape, font)
-
-		svgContent := generateSVG(text, shape, font)
+		svgContent := generateSVG(text, shape, fontFamily, foregroundColor, backgroundColor)
 		c.Data(http.StatusOK, "image/svg+xml", []byte(svgContent))
 	})
 
