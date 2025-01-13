@@ -22,7 +22,7 @@ func drawText(
 
 	// Draw each line of text inside the shape
 	for i, line := range lines {
-		fontSize := 11 - float64(len(line))*0.75
+		fontSize := 10 - float64(len(line))*0.45
 
 		face := fontFamily.Face(fontSize, canvas.FontRegular, canvas.FontNormal)
 		textPath, _, err := face.ToPath(line)
