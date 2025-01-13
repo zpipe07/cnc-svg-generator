@@ -9,15 +9,15 @@ import (
 )
 
 func generateSVG(
+	productConfig ProductConfig,
 	lines []string,
-	shape string,
 	fontFamily *canvas.FontFamily,
 	foregroundColor color.RGBA,
 	backgroundColor color.RGBA,
 ) string {
-	// Hardcoded dimensions in inches
-	width := 15.0
-	height := 11.0
+
+	width := productConfig.Width
+	height := productConfig.Height
 
 	// Create a new canvas with dynamic width and height
 	c := canvas.New(width, height)
@@ -26,7 +26,12 @@ func generateSVG(
 	// Draw the appropriate shape around the text
 	ctx.SetStrokeWidth(0.0125)
 
-	drawShape(ctx, width, height, shape, foregroundColor, backgroundColor)
+	drawShape(
+		ctx,
+		productConfig,
+		foregroundColor,
+		backgroundColor,
+	)
 	drawText(ctx, lines, fontFamily, width, height, foregroundColor, backgroundColor)
 
 	// Export the canvas to an SVG

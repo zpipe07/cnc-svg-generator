@@ -2,20 +2,38 @@ package main
 
 import (
 	_ "embed"
+	"log"
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	alderProductId := os.Getenv("ALDER_PRODUCT_ID")
+	log.Println("Alder product ID: ", alderProductId)
+
 	r := gin.Default()
 
 	r.GET("/svg", func(c *gin.Context) {
+		productId := c.Query("productId")
 		text := c.QueryArray("text")
-		shape := c.DefaultQuery("shape", "rectangle")
 		fontFamilyStr := c.Query("fontFamily")
 		bgColorStr := c.Query("backgroundColor")
 		fgColorStr := c.Query("foregroundColor")
+
+		productConfig, err := getProductConfig(productId)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid productId. Supported values are 'alder'."})
+			return
+		}
+		log.Println("Product config: ", productConfig)
 
 		// Parse colors
 		backgroundColor, err := parseColor(bgColorStr)
@@ -28,21 +46,27 @@ func main() {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid foregroundColor. Supported values are 'white', 'black', 'red', 'blue', or 'green'."})
 			return
 		}
+
+		// Parse font family
 		fontFamily, err := parseFontFamily(fontFamilyStr)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid fontFamily. Supported values are 'bungee' or 'limelight'."})
 			return
 		}
-		if shape != "ellipse" && shape != "rectangle" && shape != "deco" {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid shape. Supported values are 'ellipse', 'rectangle', or 'deco'."})
-			return
-		}
+
+		// Validate text
 		if len(text) == 0 {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "The text parameter is required."})
 			return
 		}
 
-		svgContent := generateSVG(text, shape, fontFamily, foregroundColor, backgroundColor)
+		svgContent := generateSVG(
+			productConfig,
+			text,
+			fontFamily,
+			foregroundColor,
+			backgroundColor,
+		)
 		c.Data(http.StatusOK, "image/svg+xml", []byte(svgContent))
 	})
 

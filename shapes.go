@@ -3,6 +3,7 @@ package main
 import (
 	"image/color"
 	"log"
+	"os"
 
 	"github.com/tdewolff/canvas"
 )
@@ -35,21 +36,40 @@ func drawEllipse(
 	ctx.DrawPath(0, 0, borderInner)
 }
 
-func drawShape(
+func drawAlder(
 	ctx *canvas.Context,
 	width float64,
 	height float64,
-	shape string,
 	foregroundColor color.RGBA,
 	backgroundColor color.RGBA,
 ) {
-	if shape == "ellipse" {
-		drawEllipse(ctx, width, height, foregroundColor, backgroundColor)
-	} else if shape == "rectangle" {
-		rectPath := canvas.RoundedRectangle(width, height, 0.25)
+
+	ctx.SetFillColor(backgroundColor)
+	outerEdge := canvas.RoundedRectangle(width, height, 0.2)
+	outerEdge = outerEdge.Translate(0, 0)
+	ctx.DrawPath(0, 0, outerEdge)
+
+	ctx.SetFillColor(foregroundColor)
+	roundedEdge := canvas.RoundedRectangle(width-0.4, height-0.4, 0.1)
+	roundedEdge = roundedEdge.Translate(0.2, 0.2)
+	ctx.DrawPath(0, 0, roundedEdge)
+
+}
+
+func drawShape(
+	ctx *canvas.Context,
+	productConfig ProductConfig,
+	foregroundColor color.RGBA,
+	backgroundColor color.RGBA,
+) {
+
+	if productConfig.ProductId == os.Getenv("ELLIPSE_PRODUCT_ID") {
+		drawEllipse(ctx, productConfig.Width, productConfig.Height, foregroundColor, backgroundColor)
+	} else if productConfig.ProductId == os.Getenv("RECTANGLE_PRODUCT_ID") {
+		rectPath := canvas.RoundedRectangle(productConfig.Width, productConfig.Height, 0.25)
 		rectPath = rectPath.Translate(0, 0)
 		ctx.DrawPath(0, 0, rectPath)
-	} else if shape == "deco" {
+	} else if productConfig.ProductId == os.Getenv("DECO_PRODUCT_ID") {
 		// Draw a decorative shape around the text
 		svgStr := []string{
 			"M 14.306 0.596 L 9.132 0.596 C 9.094 0.596 9.058 0.581 9.031 0.555 C 8.946 0.474 8.817 0.442 8.688 0.462 A 0.511 0.511 0 0 0 8.644 0.471 A 0.142 0.142 0 0 1 8.628 0.474 C 8.622 0.475 8.616 0.475 8.61 0.475 A 0.14 0.14 0 0 1 8.494 0.414 A 0.474 0.474 0 0 0 8.098 0.228 A 0.624 0.624 0 0 0 8.019 0.233 A 0.142 0.142 0 0 1 8 0.235 A 0.14 0.14 0 0 1 7.887 0.177 A 0.434 0.434 0 0 0 7.842 0.126 A 0.455 0.455 0 0 0 7.511 0 A 0.455 0.455 0 0 0 7.181 0.126 A 0.434 0.434 0 0 0 7.135 0.178 C 7.105 0.218 7.055 0.24 7.005 0.233 C 6.809 0.208 6.624 0.277 6.528 0.415 A 0.14 0.14 0 0 1 6.413 0.475 C 6.407 0.475 6.402 0.475 6.396 0.474 A 0.142 0.142 0 0 1 6.376 0.47 A 0.511 0.511 0 0 0 6.335 0.462 C 6.31 0.458 6.285 0.456 6.26 0.456 A 0.387 0.387 0 0 0 5.989 0.557 A 0.141 0.141 0 0 1 5.891 0.596 A 0.14 0.14 0 0 1 5.889 0.596 L 0.694 0.596 C 0.661 0.596 0.634 0.623 0.634 0.655 L 0.634 0.921 C 0.634 0.957 0.62 0.992 0.594 1.018 L 0.395 1.212 A 0.141 0.141 0 0 1 0.297 1.252 A 0.143 0.143 0 0 1 0.294 1.252 L 0.06 1.252 C 0.027 1.252 0 1.278 0 1.311 L 0 10.286 C 0 10.318 0.027 10.345 0.06 10.345 L 0.297 10.345 C 0.334 10.345 0.37 10.359 0.396 10.385 L 0.593 10.578 A 0.137 0.137 0 0 1 0.634 10.676 A 0.138 0.138 0 0 1 0.634 10.678 L 0.634 10.941 C 0.634 10.974 0.661 11 0.694 11 L 14.306 11 C 14.339 11 14.366 10.974 14.366 10.941 L 14.366 10.676 A 0.137 0.137 0 0 1 14.406 10.579 L 14.605 10.385 A 0.141 0.141 0 0 1 14.703 10.345 A 0.142 0.142 0 0 1 14.706 10.345 L 14.94 10.345 A 0.06 0.06 0 0 0 15 10.286 L 15 1.311 A 0.06 0.06 0 0 0 14.94 1.252 L 14.703 1.252 C 14.667 1.252 14.631 1.238 14.605 1.212 L 14.407 1.019 A 0.137 0.137 0 0 1 14.366 0.921 A 0.137 0.137 0 0 1 14.366 0.919 L 14.366 0.655 A 0.06 0.06 0 0 0 14.306 0.596 Z",
@@ -64,12 +84,15 @@ func drawShape(
 				continue // Skip invalid paths
 			}
 			transform := canvas.Identity.
-				Scale(1, -1).         // Flip Y-axis
-				Translate(0, -height) // Move the path upwards to stay visible
+				Scale(1, -1).                       // Flip Y-axis
+				Translate(0, -productConfig.Height) // Move the path upwards to stay visible
 			decoPath = decoPath.Transform(transform)
 			ctx.DrawPath(0, 0, decoPath)
 		}
+	} else if productConfig.ProductId == os.Getenv("ALDER_PRODUCT_ID") {
+		drawAlder(ctx, productConfig.Width, productConfig.Height, foregroundColor, backgroundColor)
 	} else {
-		panic("Invalid shape: " + shape)
+
+		panic("Invalid product ID: " + productConfig.ProductId)
 	}
 }
