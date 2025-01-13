@@ -37,6 +37,12 @@ func getProductConfig(productId string) (ProductConfig, error) {
 			Width:     15,
 			Height:    11,
 		}, nil
+	case os.Getenv("RECURSO_PRODUCT_ID"):
+		return ProductConfig{
+			ProductId: os.Getenv("RECURSO_PRODUCT_ID"),
+			Width:     15,
+			Height:    11,
+		}, nil
 	default:
 		return ProductConfig{}, errors.New("invalid product ID")
 	}
