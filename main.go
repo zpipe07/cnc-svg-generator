@@ -13,15 +13,14 @@ import (
 func main() {
 	log.Println("Starting the application...")
 
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-
-	alderProductId := os.Getenv("ALDER_PRODUCT_ID")
-	log.Println("Alder product ID: ", alderProductId)
+	godotenv.Load()
+	// err := godotenv.Load()
+	// if err != nil {
+	// 	log.Fatal("Error loading .env file")
+	// }
 
 	r := gin.Default()
+	log.Println("Gin router initialized...")
 
 	r.GET("/svg", func(c *gin.Context) {
 		productId := c.Query("productId")
