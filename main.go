@@ -70,5 +70,10 @@ func main() {
 		c.Data(http.StatusOK, "image/svg+xml", []byte(svgContent))
 	})
 
-	r.Run("localhost:8080") // Start the server on port 8080
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080" // Default to 8080 if no PORT is set
+	}
+
+	r.Run("0.0.0.0:8080") // Start the server on port 8080
 }
