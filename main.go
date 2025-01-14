@@ -75,5 +75,5 @@ func main() {
 		port = "8080" // Default to 8080 if no PORT is set
 	}
 
-	r.Run("0.0.0.0:8080") // Start the server on port 8080
+	r.Run("0.0.0.0:" + port) // Start the server on port 8080
 }
