@@ -11,6 +11,8 @@ import (
 )
 
 func main() {
+	log.Println("Starting the application...")
+
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
@@ -75,5 +77,10 @@ func main() {
 		port = "8080" // Default to 8080 if no PORT is set
 	}
 
-	r.Run("0.0.0.0:" + port) // Start the server on port 8080
+	log.Printf("Using port: %s\n", port)
+
+	log.Println("Starting server...")
+	if err := r.Run("0.0.0.0:" + port); err != nil {
+		log.Fatalf("Error starting server: %v", err)
+	}
 }
