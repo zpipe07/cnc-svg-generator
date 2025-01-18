@@ -1,4 +1,4 @@
-package main
+package svg
 
 import (
 	"errors"
@@ -8,7 +8,7 @@ import (
 	"github.com/tdewolff/canvas"
 )
 
-func parseColor(color string) (color.RGBA, error) {
+func ParseColor(color string) (color.RGBA, error) {
 	switch strings.ToLower(color) {
 	case "white":
 		return canvas.White, nil

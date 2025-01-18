@@ -1,4 +1,4 @@
-package main
+package svg
 
 import (
 	"bytes"
@@ -8,7 +8,7 @@ import (
 	"github.com/tdewolff/canvas/renderers/svg"
 )
 
-func generateSVG(
+func GenerateSVG(
 	productConfig ProductConfig,
 	lines []string,
 	fontFamily *canvas.FontFamily,

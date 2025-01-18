@@ -1,4 +1,4 @@
-package main
+package svg
 
 import (
 	"errors"
@@ -11,7 +11,7 @@ type ProductConfig struct {
 	Height    float64
 }
 
-func getProductConfig(productId string) (ProductConfig, error) {
+func GetProductConfig(productId string) (ProductConfig, error) {
 	switch productId {
 	case os.Getenv("ALDER_PRODUCT_ID"):
 		return ProductConfig{

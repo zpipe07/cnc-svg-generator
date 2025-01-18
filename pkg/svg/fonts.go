@@ -1,4 +1,4 @@
-package main
+package svg
 
 import (
 	_ "embed"
@@ -22,7 +22,7 @@ var limelightFont []byte
 //go:embed fonts/Shrikhand-Regular.ttf
 var shrikhandFont []byte
 
-func parseFontFamily(fontFamilyStr string) (*canvas.FontFamily, error) {
+func ParseFontFamily(fontFamilyStr string) (*canvas.FontFamily, error) {
 	var fontFamily *canvas.FontFamily
 	switch fontFamilyStr {
 	case "arbutus":
