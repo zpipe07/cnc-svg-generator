@@ -26,13 +26,15 @@ func generateSVG(
 	// Draw the appropriate shape around the text
 	ctx.SetStrokeWidth(0.0125)
 
-	drawShape(
+	drawSvg(
 		ctx,
 		productConfig,
 		foregroundColor,
 		backgroundColor,
+		lines,
+		fontFamily,
 	)
-	drawText(ctx, lines, fontFamily, width, height, foregroundColor, backgroundColor)
+	// drawText(ctx, lines, fontFamily, width, height, foregroundColor, backgroundColor)
 
 	// Export the canvas to an SVG
 	var buf bytes.Buffer

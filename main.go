@@ -31,7 +31,7 @@ func main() {
 
 		productConfig, err := getProductConfig(productId)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid productId. Supported values are 'alder'."})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid productId."})
 			return
 		}
 		log.Println("Product config: ", productConfig)
@@ -39,19 +39,19 @@ func main() {
 		// Parse colors
 		backgroundColor, err := parseColor(bgColorStr)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid backgroundColor. Supported values are 'white', 'black', 'red', 'blue', or 'green'."})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid backgroundColor."})
 			return
 		}
 		foregroundColor, err := parseColor(fgColorStr)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid foregroundColor. Supported values are 'white', 'black', 'red', 'blue', or 'green'."})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid foregroundColor."})
 			return
 		}
 
 		// Parse font family
 		fontFamily, err := parseFontFamily(fontFamilyStr)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid fontFamily. Supported values are 'bungee' or 'limelight'."})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid fontFamily."})
 			return
 		}
 
@@ -79,7 +79,8 @@ func main() {
 	log.Printf("Using port: %s\n", port)
 
 	log.Println("Starting server...")
-	if err := r.Run("0.0.0.0:" + port); err != nil {
+	// if err := r.Run("0.0.0.0:" + port); err != nil {
+	if err := r.Run("localhost:" + port); err != nil {
 		log.Fatalf("Error starting server: %v", err)
 	}
 }

@@ -42,8 +42,10 @@ func drawAlder(
 	height float64,
 	foregroundColor color.RGBA,
 	backgroundColor color.RGBA,
+	lines []string,
+	fontFamily *canvas.FontFamily,
 ) {
-
+	// draw shapes
 	ctx.SetFillColor(backgroundColor)
 	outerEdge := canvas.RoundedRectangle(width, height, 0.2)
 	outerEdge = outerEdge.Translate(0, 0)
@@ -54,6 +56,38 @@ func drawAlder(
 	roundedEdge = roundedEdge.Translate(0.2, 0.2)
 	ctx.DrawPath(0, 0, roundedEdge)
 
+	// draw text
+	ctx.SetFillColor(backgroundColor)
+	// yOffset := 0.0
+
+	for i, line := range lines {
+		fontSize := 10 - float64(len(line))*0.45
+
+		face := fontFamily.Face(fontSize, canvas.FontRegular, canvas.FontNormal)
+		textPath, _, err := face.ToPath(line)
+		if err != nil {
+			log.Fatalf("Failed to convert text to path: %s", err)
+		}
+		textBounds := textPath.Bounds()
+		var x, y float64
+
+		if i == 0 {
+			x = 2
+			y = height/2 - textBounds.H()/2
+		} else if i == 1 {
+			x = 6
+			y = height/2 - textBounds.H()/2 + 1.5
+		} else if i == 2 {
+			x = 6
+			y = height/2 - textBounds.H()/2 - 1.5
+		}
+		// lineHeight := textBounds.H() + 0.75
+		// startY := ((height - (float64(len(lines)) * lineHeight)) / 2) - yOffset
+		// textX := (width - textBounds.W()) / 2
+		// textY := startY + lineHeight*float64(i+1) - textBounds.H() // Center the text vertically
+		// textPath = textPath.Translate(textX, textY)
+		ctx.DrawPath(x, y, textPath)
+	}
 }
 
 func drawFleur(
@@ -222,11 +256,13 @@ func drawDeco(
 	}
 }
 
-func drawShape(
+func drawSvg(
 	ctx *canvas.Context,
 	productConfig ProductConfig,
 	foregroundColor color.RGBA,
 	backgroundColor color.RGBA,
+	lines []string,
+	fontFamily *canvas.FontFamily,
 ) {
 
 	if productConfig.ProductId == os.Getenv("ELLIPSE_PRODUCT_ID") {
@@ -238,7 +274,7 @@ func drawShape(
 	} else if productConfig.ProductId == os.Getenv("DECO_PRODUCT_ID") {
 		drawDeco(ctx, productConfig.Width, productConfig.Height, foregroundColor, backgroundColor)
 	} else if productConfig.ProductId == os.Getenv("ALDER_PRODUCT_ID") {
-		drawAlder(ctx, productConfig.Width, productConfig.Height, foregroundColor, backgroundColor)
+		drawAlder(ctx, productConfig.Width, productConfig.Height, foregroundColor, backgroundColor, lines, fontFamily)
 	} else if productConfig.ProductId == os.Getenv("FLEUR_PRODUCT_ID") {
 		drawFleur(ctx, productConfig.Width, productConfig.Height, foregroundColor, backgroundColor)
 	} else if productConfig.ProductId == os.Getenv("CEZAR_PRODUCT_ID") {
