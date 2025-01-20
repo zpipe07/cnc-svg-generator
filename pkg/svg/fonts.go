@@ -2,6 +2,7 @@ package svg
 
 import (
 	_ "embed"
+	"errors"
 	"log"
 
 	"github.com/tdewolff/canvas"
@@ -21,6 +22,9 @@ var limelightFont []byte
 
 //go:embed fonts/Shrikhand-Regular.ttf
 var shrikhandFont []byte
+
+//go:embed fonts/GreatVibes-Regular.ttf
+var greatvibesFont []byte
 
 func ParseFontFamily(fontFamilyStr string) (*canvas.FontFamily, error) {
 	var fontFamily *canvas.FontFamily
@@ -50,13 +54,25 @@ func ParseFontFamily(fontFamilyStr string) (*canvas.FontFamily, error) {
 			panic("Font loading error")
 		}
 	case "bungee":
-		fallthrough
-	default:
 		fontFamily = canvas.NewFontFamily("Bungee")
 		if err := fontFamily.LoadFont(bungeeFont, 0, canvas.FontRegular); err != nil {
 			log.Println("Failed to load Bungee font: ", err)
 			panic("Font loading error")
 		}
+	case "greatvibes":
+		fontFamily = canvas.NewFontFamily("GreatVibes")
+		if err := fontFamily.LoadFont(greatvibesFont, 0, canvas.FontRegular); err != nil {
+			log.Println("Failed to load GreatVibes font: ", err)
+			panic("Font loading error")
+		}
+	default:
+		// fontFamily = canvas.NewFontFamily("Bungee")
+		// if err := fontFamily.LoadFont(bungeeFont, 0, canvas.FontRegular); err != nil {
+		// 	log.Println("Failed to load Bungee font: ", err)
+		// 	panic("Font loading error")
+		// }
+		log.Println("Invalid font family: ", fontFamilyStr)
+		return nil, errors.New("invalid font family")
 	}
 	return fontFamily, nil
 }
