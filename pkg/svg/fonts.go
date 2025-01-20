@@ -26,6 +26,9 @@ var shrikhandFont []byte
 //go:embed fonts/GreatVibes-Regular.ttf
 var greatvibesFont []byte
 
+//go:embed fonts/PlayfairDisplaySC-Regular.ttf
+var playfairFont []byte
+
 func ParseFontFamily(fontFamilyStr string) (*canvas.FontFamily, error) {
 	var fontFamily *canvas.FontFamily
 	switch fontFamilyStr {
@@ -63,6 +66,12 @@ func ParseFontFamily(fontFamilyStr string) (*canvas.FontFamily, error) {
 		fontFamily = canvas.NewFontFamily("GreatVibes")
 		if err := fontFamily.LoadFont(greatvibesFont, 0, canvas.FontRegular); err != nil {
 			log.Println("Failed to load GreatVibes font: ", err)
+			panic("Font loading error")
+		}
+	case "playfair":
+		fontFamily = canvas.NewFontFamily("Playfair")
+		if err := fontFamily.LoadFont(playfairFont, 0, canvas.FontRegular); err != nil {
+			log.Println("Failed to load Playfair font: ", err)
 			panic("Font loading error")
 		}
 	default:
