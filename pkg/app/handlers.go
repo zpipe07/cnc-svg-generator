@@ -1,11 +1,13 @@
 package app
 
 import (
+	"cnc-svg-generator/pkg/fonts"
 	"cnc-svg-generator/pkg/svg"
-	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/tdewolff/canvas"
 )
 
 func (s *Server) ApiStatus() gin.HandlerFunc {
@@ -26,17 +28,12 @@ func (s *Server) GetSvg() gin.HandlerFunc {
 		c.Header("Content-Type", "image/svg+xml")
 
 		productId := c.Query("productId")
+		widthStr := c.Query("width")
+		heightStr := c.Query("height")
 		text := c.QueryArray("text")
 		fontFamilyStr := c.Query("fontFamily")
 		bgColorStr := c.Query("backgroundColor")
 		fgColorStr := c.Query("foregroundColor")
-
-		productConfig, err := svg.GetProductConfig(productId)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid productId."})
-			return
-		}
-		log.Println("Product config: ", productConfig)
 
 		// Parse colors
 		backgroundColor, err := svg.ParseColor(bgColorStr)
@@ -51,10 +48,13 @@ func (s *Server) GetSvg() gin.HandlerFunc {
 		}
 
 		// Parse font family
-		fontFamily, err := svg.ParseFontFamily(fontFamilyStr)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid fontFamily."})
-			return
+		var fontFamily *canvas.FontFamily
+		if fontFamilyStr != "" {
+			fontFamily, err = fonts.ParseFontFamily(fontFamilyStr)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid fontFamily."})
+				return
+			}
 		}
 
 		// Validate text
@@ -63,8 +63,22 @@ func (s *Server) GetSvg() gin.HandlerFunc {
 			return
 		}
 
+		width, err := strconv.ParseFloat(widthStr, 64)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid width."})
+			return
+		}
+		height, err := strconv.ParseFloat(heightStr, 64)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid height."})
+			return
+		}
+
 		svgContent := svg.GenerateSVG(
-			productConfig,
+			// productConfig,
+			productId,
+			width,
+			height,
 			text,
 			fontFamily,
 			foregroundColor,

@@ -1,34 +1,35 @@
-package svg
+package fonts
 
 import (
 	_ "embed"
+	"errors"
 	"log"
 
 	"github.com/tdewolff/canvas"
 )
 
-//go:embed fonts/ArbutusSlab-Regular.ttf
+//go:embed ArbutusSlab-Regular.ttf
 var ArbutusFont []byte
 
-//go:embed fonts/Bungee-Regular.ttf
+//go:embed Bungee-Regular.ttf
 var bungeeFont []byte
 
-//go:embed fonts/Danfo-Regular.ttf
+//go:embed Danfo-Regular.ttf
 var danfoFont []byte
 
-//go:embed fonts/Limelight-Regular.ttf
+//go:embed Limelight-Regular.ttf
 var limelightFont []byte
 
-//go:embed fonts/Shrikhand-Regular.ttf
+//go:embed Shrikhand-Regular.ttf
 var shrikhandFont []byte
 
-//go:embed fonts/GreatVibes-Regular.ttf
+//go:embed GreatVibes-Regular.ttf
 var greatvibesFont []byte
 
-//go:embed fonts/PlayfairDisplaySC-Regular.ttf
+//go:embed PlayfairDisplaySC-Regular.ttf
 var playfairFont []byte
 
-//go:embed fonts/Playball-Regular.ttf
+//go:embed Playball-Regular.ttf
 var PlayballFont []byte
 
 func ParseFontFamily(fontFamilyStr string) (*canvas.FontFamily, error) {
@@ -82,9 +83,9 @@ func ParseFontFamily(fontFamilyStr string) (*canvas.FontFamily, error) {
 		// 	log.Println("Failed to load Bungee font: ", err)
 		// 	panic("Font loading error")
 		// }
-		// log.Println("Invalid font family: ", fontFamilyStr)
-		// return nil, errors.New("invalid font family")
-		return nil, nil
+		log.Println("Invalid font family: ", fontFamilyStr)
+		return nil, errors.New("invalid font family")
+		// return nil, nil
 	}
 	return fontFamily, nil
 }
