@@ -20,7 +20,7 @@ func DrawSign(
 ) {
 
 	if productId == os.Getenv("ELLIPSE_PRODUCT_ID") {
-		drawEllipse(ctx, width, height, foregroundColor, backgroundColor)
+		drawEllipse(ctx, width, height, foregroundColor, backgroundColor, lines, fontFamily)
 	} else if productId == os.Getenv("RECTANGLE_PRODUCT_ID") {
 
 		drawRectangle(ctx, width, height, foregroundColor, backgroundColor, lines, fontFamily)

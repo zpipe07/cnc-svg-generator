@@ -7,16 +7,19 @@ import (
 	"github.com/tdewolff/canvas"
 )
 
-func drawRectangle(ctx *canvas.Context,
+func drawRectangle(
+	ctx *canvas.Context,
 	width float64,
 	height float64,
 	foregroundColor color.RGBA,
 	backgroundColor color.RGBA,
 	lines []string,
-	fontFamily *canvas.FontFamily) {
+	fontFamily *canvas.FontFamily,
+) {
+	// draw shapes
 	ctx.SetFillColor(backgroundColor)
 	ctx.SetStrokeColor(foregroundColor)
-	ctx.SetStrokeWidth(0.025)
+	ctx.SetStrokeWidth(0.01)
 	outerEdge := canvas.RoundedRectangle(width, height, 0.25)
 	ctx.DrawPath(0, 0, outerEdge)
 
