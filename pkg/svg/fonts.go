@@ -2,14 +2,13 @@ package svg
 
 import (
 	_ "embed"
-	"errors"
 	"log"
 
 	"github.com/tdewolff/canvas"
 )
 
 //go:embed fonts/ArbutusSlab-Regular.ttf
-var arbutusFont []byte
+var ArbutusFont []byte
 
 //go:embed fonts/Bungee-Regular.ttf
 var bungeeFont []byte
@@ -29,12 +28,15 @@ var greatvibesFont []byte
 //go:embed fonts/PlayfairDisplaySC-Regular.ttf
 var playfairFont []byte
 
+//go:embed fonts/Playball-Regular.ttf
+var PlayballFont []byte
+
 func ParseFontFamily(fontFamilyStr string) (*canvas.FontFamily, error) {
 	var fontFamily *canvas.FontFamily
 	switch fontFamilyStr {
 	case "arbutus":
 		fontFamily = canvas.NewFontFamily("Arbutus")
-		if err := fontFamily.LoadFont(arbutusFont, 0, canvas.FontRegular); err != nil {
+		if err := fontFamily.LoadFont(ArbutusFont, 0, canvas.FontRegular); err != nil {
 			log.Println("Failed to load Arbutus font: ", err)
 			panic("Font loading error")
 		}
@@ -80,8 +82,9 @@ func ParseFontFamily(fontFamilyStr string) (*canvas.FontFamily, error) {
 		// 	log.Println("Failed to load Bungee font: ", err)
 		// 	panic("Font loading error")
 		// }
-		log.Println("Invalid font family: ", fontFamilyStr)
-		return nil, errors.New("invalid font family")
+		// log.Println("Invalid font family: ", fontFamilyStr)
+		// return nil, errors.New("invalid font family")
+		return nil, nil
 	}
 	return fontFamily, nil
 }
