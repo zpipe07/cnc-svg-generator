@@ -90,6 +90,8 @@ func drawDeco(
 	for i, line := range lines {
 		// draw text container
 		ctx.SetFill(nil)
+
+		// uncomment to draw text container border
 		// ctx.SetStrokeWidth(0.1)
 		// ctx.SetStrokeColor(canvas.Lightgray)
 
@@ -97,76 +99,42 @@ func drawDeco(
 		var containerX, containerY float64
 		var containerBounds canvas.Rect
 		if i == 0 {
-			container = canvas.Rectangle(width-2, 2)
+			container = canvas.Rectangle(width-2, 1.5)
 			containerBounds = container.Bounds()
 			containerX = width/2 - containerBounds.W()/2
-			containerY = height - 3.75
+			containerY = height - 3.4
 		} else if i == 1 {
-			container = canvas.Rectangle(width-2, 4)
+			container = canvas.Rectangle(width-2, 3.0)
 			containerBounds = container.Bounds()
 			containerX = width/2 - containerBounds.W()/2
 			containerY = height/2 - containerBounds.H()/2 - 0.5
 		} else if i == 2 {
-			container = canvas.Rectangle(width-2, 2)
+			container = canvas.Rectangle(width-2, 1.7)
 			containerBounds = container.Bounds()
 			containerX = width/2 - containerBounds.W()/2
-			containerY = 0.7
+			containerY = 0.8
 		}
-
 		ctx.DrawPath(containerX, containerY, container)
-
-		// containerCenterX := (containerMinX + containerMaxX) / 2
-		// containerCenterX := (containerBounds.X0 + containerBounds.Center().X) / 2
-		// containerCenterY := (containerMinY + containerMaxY) / 2
 
 		// draw text
 		ctx.SetStroke(nil)
 		ctx.SetFillColor(backgroundColor)
 		fontSize := 8 - float64(len(line))*0.25
-
 		face := fontFamily.Face(fontSize, canvas.FontRegular, canvas.FontNormal)
 		textPath, _, err := face.ToPath(line)
 		if err != nil {
 			log.Fatalf("Failed to convert text to path: %s", err)
 		}
-		// // Get the bounding box of the path
-		// minX, minY, maxX, maxY := path.Bounds()
-		// pathWidth := maxX - minX
-		// pathHeight := maxY - minY
 		textBounds := textPath.Bounds()
 
 		// // Calculate the scale factor to fit the path within the container
-		// scale := min(containerWidth/pathWidth, containerHeight/pathHeight)
 		scale := min(containerBounds.W()/textBounds.W(), containerBounds.H()/textBounds.H())
 		textPath.Scale(scale, scale)
-		// var x, y float64
-		// var x float64
-
-		// translateX := containerCenterX - scaledPathCenterX
-		// translateY := containerCenterY - scaledPathCenterY
 
 		// recalculate the bounds after scaling
 		textBounds = textPath.Bounds()
-		// log.Print("textBounds.Center().X")
-		// log.Print(textBounds.Center)
-		log.Print("containerBounds")
-		// log.Print(containerBounds.Zero())
-		log.Print(containerBounds.H())
-		// x := textBounds.X0 - containerBounds.X0
-		// y := textBounds.Y0 - containerBounds.Y0
-
-		// if i == 0 {
-		// 	x = width/2 - textBounds.W()/2*scale - outerBounds.X0
-		// 	// y = height/2 - textBounds.H()/2 + 2.75
-		// } else if i == 1 {
-		// 	x = width/2 - textBounds.W()/2*scale - outerBounds.X0
-		// 	// y = height/2 - textBounds.H()/2 - 0.5
-		// } else if i == 2 {
-		// 	x = width/2 - textBounds.W()/2*scale - outerBounds.X0
-		// 	// y = height/2 - textBounds.H()/2 - 3.95
-		// }
-
-		// ctx.DrawPath(x, y, textPath)
-		ctx.DrawPath(containerX+containerBounds.W()/2-textBounds.W()/2, containerY+containerBounds.H()/2-textBounds.H()/2, textPath)
+		x := containerX + containerBounds.W()/2 - textBounds.W()/2
+		y := containerY + containerBounds.H()/2 - textBounds.H()/2
+		ctx.DrawPath(x, y, textPath)
 	}
 }
