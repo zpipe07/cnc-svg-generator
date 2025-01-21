@@ -127,7 +127,7 @@ func drawDeco(
 		}
 		textBounds := textPath.Bounds()
 
-		// // Calculate the scale factor to fit the path within the container
+		// Calculate the scale factor to fit the path within the container
 		scale := min(containerBounds.W()/textBounds.W(), containerBounds.H()/textBounds.H())
 		textPath.Scale(scale, scale)
 

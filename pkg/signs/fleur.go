@@ -66,24 +66,48 @@ func drawFleur(
 
 	// draw text
 	for i, line := range lines {
-		fontSize := 10 - float64(len(line))*0.45
+		// draw text container
+		ctx.SetFill(nil)
 
+		// uncomment to draw text container border
+		// ctx.SetStrokeWidth(0.1)
+		// ctx.SetStrokeColor(canvas.Lightgray)
+
+		var container *canvas.Path
+		var containerX, containerY float64
+		var containerBounds canvas.Rect
+		if i == 0 {
+			container = canvas.Rectangle(width-2, 2.3)
+			containerBounds = container.Bounds()
+			containerX = width/2 - containerBounds.W()/2
+			containerY = 5.675
+		} else if i == 1 {
+			container = canvas.Rectangle(width-2, 1.75)
+			containerBounds = container.Bounds()
+			containerX = width/2 - containerBounds.W()/2
+			containerY = 3.5
+		}
+		ctx.DrawPath(containerX, containerY, container)
+
+		// draw text
+		ctx.SetStroke(nil)
+		ctx.SetFillColor(backgroundColor)
+		fontSize := 10 - float64(len(line))*0.45
 		face := fontFamily.Face(fontSize, canvas.FontRegular, canvas.FontNormal)
 		textPath, _, err := face.ToPath(line)
 		if err != nil {
 			log.Fatalf("Failed to convert text to path: %s", err)
 		}
 		textBounds := textPath.Bounds()
-		var x, y float64
 
-		if i == 0 {
-			x = width/2 - textBounds.W()/2 - outerBounds.X0
-			y = height/2 - textBounds.H()/2 + 1.0
-		} else if i == 1 {
-			x = width/2 - textBounds.W()/2 - outerBounds.X0
-			y = height/2 - textBounds.H()/2 - 1.0
-		}
+		// Calculate the scale factor to fit the path within the container
+		scale := min(containerBounds.W()/textBounds.W(), containerBounds.H()/textBounds.H())
+		textPath.Scale(scale, scale)
 
+		// recalculate the bounds after scaling
+		textBounds = textPath.Bounds()
+		x := containerX + containerBounds.W()/2 - textBounds.W()/2
+		y := containerY + containerBounds.H()/2 - textBounds.H()/2
 		ctx.DrawPath(x, y, textPath)
 	}
 }
