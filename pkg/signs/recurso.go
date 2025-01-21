@@ -96,29 +96,32 @@ func drawRecurso(
 			// containerY = 5.675
 			continue
 		} else if i == 1 {
-			container = canvas.Rectangle(width-3, 2.5)
+			container = canvas.Rectangle(width-3, 2.75)
 			containerBounds = container.Bounds()
 			containerX = width/2 - containerBounds.W()/2
-			containerY = 4.0
+			containerY = 3.75
 		} else if i == 2 {
 			container = canvas.Rectangle(width-3, 1.75)
 			containerBounds = container.Bounds()
 			containerX = width/2 - containerBounds.W()/2
-			containerY = 1.75
+			containerY = 1.5
 		}
 		ctx.DrawPath(containerX, containerY, container)
 
 		// draw text
 		ctx.SetStroke(nil)
 		ctx.SetFillColor(backgroundColor)
-		fontSize := 10 - float64(len(line))*0.25
+		fontSize := 1.0
 		face := fontFamily.Face(fontSize, canvas.Black, canvas.FontRegular, canvas.FontNormal)
 		textPath, _, err := face.ToPath(line)
 		if err != nil {
 			panic(err)
 		}
 		textBounds := textPath.Bounds()
-		// var x, y float64
+		metrics := face.Metrics()
+		ascent := metrics.Ascent
+		descent := metrics.Descent
+		totalHeight := ascent + descent
 
 		// Calculate the scale factor to fit the path within the container
 		scale := min(containerBounds.W()/textBounds.W(), containerBounds.H()/textBounds.H())
@@ -127,7 +130,7 @@ func drawRecurso(
 		// recalculate the bounds after scaling
 		textBounds = textPath.Bounds()
 		x := containerX + containerBounds.W()/2 - textBounds.W()/2
-		y := containerY + containerBounds.H()/2 - textBounds.H()/2
+		y := containerY + containerBounds.H()/2 - (totalHeight/2)*scale + descent*scale
 
 		ctx.DrawPath(x, y, textPath)
 	}
