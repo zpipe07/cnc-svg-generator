@@ -25,7 +25,7 @@ func DrawSign(
 
 		drawRectangle(ctx, width, height, foregroundColor, backgroundColor, lines, fontFamily)
 	} else if productId == os.Getenv("DECO_PRODUCT_ID") {
-		drawDeco(ctx, width, height, foregroundColor, backgroundColor)
+		drawDeco(ctx, width, height, foregroundColor, backgroundColor, lines)
 	} else if productId == os.Getenv("ALDER_PRODUCT_ID") {
 		drawAlder(ctx, width, height, foregroundColor, backgroundColor, lines, fontFamily)
 	} else if productId == os.Getenv("FLEUR_PRODUCT_ID") {

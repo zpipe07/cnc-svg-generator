@@ -18,7 +18,7 @@ var bungeeFont []byte
 var danfoFont []byte
 
 //go:embed Limelight-Regular.ttf
-var limelightFont []byte
+var Limelight []byte
 
 //go:embed Shrikhand-Regular.ttf
 var shrikhandFont []byte
@@ -85,7 +85,7 @@ func ParseFontFamily(fontFamilyStr string) (*canvas.FontFamily, error) {
 		}
 	case "limelight":
 		fontFamily = canvas.NewFontFamily("Limelight")
-		if err := fontFamily.LoadFont(limelightFont, 0, canvas.FontRegular); err != nil {
+		if err := fontFamily.LoadFont(Limelight, 0, canvas.FontRegular); err != nil {
 			log.Println("Failed to load Limelight font: ", err)
 			panic("Font loading error")
 		}

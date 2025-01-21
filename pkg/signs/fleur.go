@@ -85,7 +85,5 @@ func drawFleur(
 		}
 
 		ctx.DrawPath(x, y, textPath)
-
 	}
-
 }
