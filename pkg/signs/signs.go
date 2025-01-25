@@ -22,7 +22,6 @@ func DrawSign(
 	if productId == os.Getenv("ELLIPSE_PRODUCT_ID") {
 		drawEllipse(ctx, width, height, foregroundColor, backgroundColor, lines, fontFamily)
 	} else if productId == os.Getenv("RECTANGLE_PRODUCT_ID") {
-
 		drawRectangle(ctx, width, height, foregroundColor, backgroundColor, lines, fontFamily)
 	} else if productId == os.Getenv("DECO_PRODUCT_ID") {
 		drawDeco(ctx, width, height, foregroundColor, backgroundColor, lines)
@@ -34,6 +33,8 @@ func DrawSign(
 		drawCezar(ctx, width, height, foregroundColor, backgroundColor, lines)
 	} else if productId == os.Getenv("RECURSO_PRODUCT_ID") {
 		drawRecurso(ctx, width, height, foregroundColor, backgroundColor, lines)
+	} else if productId == os.Getenv("SESAME_PRODUCT_ID") {
+		drawSesame(ctx, width, height, foregroundColor, backgroundColor, lines, fontFamily)
 	} else {
 		panic("Invalid product ID: " + productId)
 	}
