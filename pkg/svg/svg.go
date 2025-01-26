@@ -13,21 +13,19 @@ func GenerateSVG(
 	height float64,
 	lines []string,
 	fontFamily *canvas.FontFamily,
-	// foregroundColor color.RGBA,
-	// backgroundColor color.RGBA,
 	foregroundColor string,
 	backgroundColor string,
 ) string {
 
 	// Create a new canvas with dynamic width and height
-	c := canvas.New(width, height)
-	ctx := canvas.NewContext(c)
+	// c := canvas.New(width, height)
+	// ctx := canvas.NewContext(c)
 
 	// Draw the appropriate shape around the text
-	ctx.SetStrokeWidth(0.0125)
+	// ctx.SetStrokeWidth(0.0125)
 
 	svgStr := signs.DrawSign(
-		ctx,
+		// ctx,
 		productId,
 		width,
 		height,

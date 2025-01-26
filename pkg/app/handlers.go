@@ -25,7 +25,6 @@ func (s *Server) ApiStatus() gin.HandlerFunc {
 
 func (s *Server) GetSvg() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.Header("Content-Type", "image/svg+xml")
 
 		productId := c.Query("productId")
 		widthStr := c.Query("width")
@@ -75,7 +74,6 @@ func (s *Server) GetSvg() gin.HandlerFunc {
 		}
 
 		svgContent := svg.GenerateSVG(
-			// productConfig,
 			productId,
 			width,
 			height,
@@ -84,8 +82,8 @@ func (s *Server) GetSvg() gin.HandlerFunc {
 			foregroundColor,
 			backgroundColor,
 		)
-		// c.Data(http.StatusOK, "image/svg+xml", []byte(svgContent))
 
+		c.Header("Content-Type", "image/svg+xml")
 		c.String(http.StatusOK, svgContent)
 	}
 }

@@ -1,11 +1,13 @@
 package signs
 
 import (
+	"os"
+
 	"github.com/tdewolff/canvas"
 )
 
 func DrawSign(
-	ctx *canvas.Context,
+	// ctx *canvas.Context,
 	// productConfig svg.ProductConfig,
 	productId string,
 	width float64,
@@ -37,13 +39,24 @@ func DrawSign(
 	// } else {
 	// 	panic("Invalid product ID: " + productId)
 	// }
-	return drawSesame(
-		// ctx,
-		width,
-		height,
-		foregroundColor,
-		backgroundColor,
-		lines,
-		fontFamily,
-	)
+	switch productId {
+	case os.Getenv("ELLIPSE_PRODUCT_ID"):
+		return drawEllipse(width, height, foregroundColor, backgroundColor, lines, fontFamily)
+	case os.Getenv("RECTANGLE_PRODUCT_ID"):
+		return drawRectangle(width, height, foregroundColor, backgroundColor, lines, fontFamily)
+	// case os.Getenv("DECO_PRODUCT_ID"):
+	// 	drawDeco(width, height, foregroundColor, backgroundColor, lines)
+	// case os.Getenv("ALDER_PRODUCT_ID"):
+	// 	drawAlder(width, height, foregroundColor, backgroundColor, lines, fontFamily)
+	// case os.Getenv("FLEUR_PRODUCT_ID"):
+	// 	drawFleur(width, height, foregroundColor, backgroundColor, lines, fontFamily)
+	// case os.Getenv("CEZAR_PRODUCT_ID"):
+	// 	drawCezar(width, height, foregroundColor, backgroundColor, lines)
+	// case os.Getenv("RECURSO_PRODUCT_ID"):
+	// 	drawRecurso(width, height, foregroundColor, backgroundColor, lines)
+	case os.Getenv("SESAME_PRODUCT_ID"):
+		return drawSesame(width, height, foregroundColor, backgroundColor, lines, fontFamily)
+	default:
+		return "Invalid product ID: " + productId
+	}
 }
