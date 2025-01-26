@@ -26,7 +26,6 @@ func (s *Server) ApiStatus() gin.HandlerFunc {
 func (s *Server) GetSvg() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Header("Content-Type", "image/svg+xml")
-		c.Header("Cache-Control", "no-store")
 
 		productId := c.Query("productId")
 		widthStr := c.Query("width")
