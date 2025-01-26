@@ -37,5 +37,13 @@ func DrawSign(
 	// } else {
 	// 	panic("Invalid product ID: " + productId)
 	// }
-	return drawSesame(ctx, width, height, foregroundColor, backgroundColor, lines, fontFamily)
+	return drawSesame(
+		// ctx,
+		width,
+		height,
+		foregroundColor,
+		backgroundColor,
+		lines,
+		fontFamily,
+	)
 }
