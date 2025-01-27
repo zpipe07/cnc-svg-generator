@@ -21,7 +21,6 @@ func drawAlder(
 
 	// Add the outer edge
 	outerEdge := canvas.RoundedRectangle(width, height, 0.2)
-	outerEdge = outerEdge.Translate(0, 0)
 	builder.StartGroup("Outer Edge", map[string]string{})
 	builder.AddPath(outerEdge.ToSVG(), map[string]string{
 		"fill": foregroundColor,
