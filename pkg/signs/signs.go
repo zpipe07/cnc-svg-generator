@@ -48,8 +48,8 @@ func DrawSign(
 	// 	drawDeco(width, height, foregroundColor, backgroundColor, lines)
 	case os.Getenv("ALDER_PRODUCT_ID"):
 		return drawAlder(width, height, foregroundColor, backgroundColor, lines, fontFamily)
-	// case os.Getenv("FLEUR_PRODUCT_ID"):
-	// 	drawFleur(width, height, foregroundColor, backgroundColor, lines, fontFamily)
+	case os.Getenv("FLEUR_PRODUCT_ID"):
+		return drawFleur(width, height, foregroundColor, backgroundColor, lines, fontFamily)
 	// case os.Getenv("CEZAR_PRODUCT_ID"):
 	// 	drawCezar(width, height, foregroundColor, backgroundColor, lines)
 	// case os.Getenv("RECURSO_PRODUCT_ID"):
