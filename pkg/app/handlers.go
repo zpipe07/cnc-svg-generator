@@ -30,6 +30,7 @@ func (s *Server) GetSvg() gin.HandlerFunc {
 		widthStr := c.Query("width")
 		heightStr := c.Query("height")
 		text := c.QueryArray("text")
+		size := c.Query("size")
 		fontFamilyStr := c.Query("fontFamily")
 		bgColorStr := c.Query("backgroundColor")
 		fgColorStr := c.Query("foregroundColor")
@@ -56,11 +57,11 @@ func (s *Server) GetSvg() gin.HandlerFunc {
 			}
 		}
 
-		// Validate text
-		if len(text) == 0 {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "The text parameter is required."})
-			return
-		}
+		// // Validate text
+		// if len(text) == 0 {
+		// 	c.JSON(http.StatusBadRequest, gin.H{"error": "The text parameter is required."})
+		// 	return
+		// }
 
 		width, err := strconv.ParseFloat(widthStr, 64)
 		if err != nil {
@@ -75,6 +76,7 @@ func (s *Server) GetSvg() gin.HandlerFunc {
 
 		svgContent := svg.GenerateSVG(
 			productId,
+			size,
 			width,
 			height,
 			text,

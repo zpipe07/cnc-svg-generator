@@ -9,7 +9,6 @@ import (
 )
 
 func drawRectangle(
-	// ctx *canvas.Context,
 	width float64,
 	height float64,
 	foregroundColor string,
@@ -55,71 +54,91 @@ func drawRectangle(
 	})
 
 	// draw text
-	for i, line := range lines {
-		// draw text container
-		var container *canvas.Path
-		var containerX, containerY float64
-		var containerBounds canvas.Rect
-		if i == 0 {
-			container = canvas.Rectangle(width-2.0, 2.0)
-			containerBounds = container.Bounds()
-			containerY = height/2 - containerBounds.H()/2 + 3.5
-		} else if i == 1 {
-			container = canvas.Rectangle(width-2.0, 4.0)
-			containerBounds = container.Bounds()
-			containerY = height/2 - containerBounds.H()/2
-		} else if i == 2 {
-			container = canvas.Rectangle(width-2.0, 2.0)
-			containerBounds = container.Bounds()
-			containerY = height/2 - containerBounds.H()/2 - 3.5
+	numLines := len(lines)
+
+	if numLines > 0 {
+		// Calculate the total height for the text containers
+		const padding = 1.0 // Padding from top and bottom
+		lineSpacing := 0.5  // Spacing between lines
+		availableHeight := height - 2*padding - float64(numLines-1)*lineSpacing
+
+		// Determine the heights for each line
+		var containerHeights []float64
+		switch numLines {
+		case 3:
+			containerHeights = []float64{
+				availableHeight * 0.25, // First line
+				availableHeight * 0.5,  // Middle line (taller)
+				availableHeight * 0.25, // Last line
+			}
+		case 2:
+			containerHeights = []float64{
+				availableHeight * 0.6, // First line (taller)
+				availableHeight * 0.4, // Last line
+			}
+		default:
+			containerHeights = []float64{availableHeight} // Single line
 		}
-		containerX = width/2 - containerBounds.W()/2
-		// *************************************************************
-		// ********** uncomment to draw text container border **********
-		// *************************************************************
-		container = container.Translate(containerX, containerY)
-		container = container.Scale(1, -1)
-		container = container.Translate(0, height)
-		builder.AddPath(container.ToSVG(), map[string]string{
-			"fill":         "none",
-			"stroke":       "pink",
-			"stroke-width": "0.025",
-			"id":           fmt.Sprintf("text-container-%d", i),
-		})
 
-		// draw text
-		fontSize := 1.0
-		face := fontFamily.Face(fontSize, canvas.FontRegular, canvas.FontNormal)
-		textPath, _, err := face.ToPath(line)
-		if err != nil {
-			log.Fatalf("Failed to convert text to path: %s", err)
+		// Calculate the starting y position for the topmost line
+		currentY := height - padding
+
+		for i, line := range lines {
+			containerHeight := containerHeights[i]
+			container := canvas.Rectangle(width-2.0, containerHeight)
+			containerBounds := container.Bounds()
+			containerX := width/2 - containerBounds.W()/2
+			containerY := currentY - containerHeight
+
+			// Position the container
+			container = container.Translate(containerX, containerY)
+			container = container.Scale(1, -1)
+			container = container.Translate(0, height)
+
+			builder.AddPath(container.ToSVG(), map[string]string{
+				"fill":         "none",
+				"stroke":       "pink",
+				"stroke-width": "0.025",
+				"id":           fmt.Sprintf("text-container-%d", i),
+			})
+
+			// Draw text
+			fontSize := 1.0
+			face := fontFamily.Face(fontSize, canvas.FontRegular, canvas.FontNormal)
+			textPath, _, err := face.ToPath(line)
+			if err != nil {
+				log.Fatalf("Failed to convert text to path: %s", err)
+			}
+			textBounds := textPath.Bounds()
+			metrics := face.Metrics()
+			ascent := metrics.Ascent
+			descent := metrics.Descent
+
+			// Scale the text to fit within the container
+			scale := min(containerBounds.W()/textBounds.W(), containerBounds.H()/textBounds.H())
+			textPath.Scale(scale, scale)
+
+			// Recalculate text position after scaling
+			textBounds = textPath.Bounds()
+			x := containerX +
+				containerBounds.W()/2 -
+				textBounds.W()/2
+			y := containerY +
+				containerBounds.H()/2 +
+				descent*scale -
+				((ascent + descent) / 2 * scale)
+			textPath = textPath.Translate(x, y)
+			textPath = textPath.Scale(1, -1)
+			textPath = textPath.Translate(0, height)
+
+			builder.AddPath(textPath.ToSVG(), map[string]string{
+				"fill": backgroundColor,
+				"id":   fmt.Sprintf("text-line-%d", i),
+			})
+
+			// Update currentY for the next line
+			currentY -= containerHeight + lineSpacing
 		}
-		textBounds := textPath.Bounds()
-		metrics := face.Metrics()
-		ascent := metrics.Ascent
-		descent := metrics.Descent
-
-		// Calculate the scale factor to fit the path within the container
-		scale := min(containerBounds.W()/textBounds.W(), containerBounds.H()/textBounds.H())
-		log.Print("scale: ", scale)
-		textPath.Scale(scale, scale)
-
-		// recalculate the bounds after scaling
-		textBounds = textPath.Bounds()
-		x := containerX +
-			containerBounds.W()/2 -
-			textBounds.W()/2
-		y := containerY +
-			containerBounds.H()/2 +
-			descent*scale -
-			((ascent+descent)/2)*scale
-		textPath = textPath.Translate(x, y)
-		textPath = textPath.Scale(1, -1)
-		textPath = textPath.Translate(0, height)
-		builder.AddPath(textPath.ToSVG(), map[string]string{
-			"fill": backgroundColor,
-			"id":   fmt.Sprintf("text-line-%d", i),
-		})
 	}
 
 	builder.EndGroup()

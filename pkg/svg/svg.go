@@ -9,6 +9,7 @@ import (
 
 func GenerateSVG(
 	productId string,
+	size string,
 	width float64,
 	height float64,
 	lines []string,
@@ -27,6 +28,7 @@ func GenerateSVG(
 	svgStr := signs.DrawSign(
 		// ctx,
 		productId,
+		size,
 		width,
 		height,
 		foregroundColor,
