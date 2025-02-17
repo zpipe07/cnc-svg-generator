@@ -2,9 +2,9 @@ services:
   - name: cnc-svg-generator
     type: web
     runtime: go
-    buildCommand: 'go build -o app .'
-    # startCommand: './app'
-    startCommand: './cmd/server/main.go'
+    buildCommand: 'go build -o app ./cmd/server/main.go'
+    startCommand: './app'
+    # startCommand: './cmd/server/main.go'
     envVars:
       - key: PORT
         value: 8080
