@@ -46,7 +46,7 @@ func DrawSign(
 	case os.Getenv("RECTANGLE_PRODUCT_ID"):
 		return drawRectangle(width, height, foregroundColor, backgroundColor, lines, fontFamily)
 	case os.Getenv("DECO_PRODUCT_ID"):
-		return drawDeco(width, height, foregroundColor, backgroundColor, lines)
+		return drawDeco(size, width, height, foregroundColor, backgroundColor, lines)
 	case os.Getenv("ALDER_PRODUCT_ID"):
 		return drawAlder(width, height, foregroundColor, backgroundColor, lines, fontFamily)
 	case os.Getenv("FLEUR_PRODUCT_ID"):
@@ -57,6 +57,8 @@ func DrawSign(
 		return drawRecurso(size, width, height, foregroundColor, backgroundColor, lines)
 	case os.Getenv("SESAME_PRODUCT_ID"):
 		return drawSesame(width, height, foregroundColor, backgroundColor, lines, fontFamily)
+	case os.Getenv("SORA_PRODUCT_ID"):
+		return drawSora(size, width, height, foregroundColor, backgroundColor, lines, fontFamily)
 	default:
 		return "Invalid product ID: " + productId
 	}

@@ -141,7 +141,7 @@ func drawRecurso(
 		// Calculate the total height for the text containers
 		const topPadding = 4.5
 		const bottomPadding = 1.5
-		lineSpacing := 0.25 // Spacing between lines
+		lineSpacing := 0.25
 		availableHeight := height - (topPadding + bottomPadding) - float64(numLines-1)*lineSpacing
 
 		// Determine the heights for each line
