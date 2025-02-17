@@ -59,6 +59,8 @@ func DrawSign(
 		return drawSesame(width, height, foregroundColor, backgroundColor, lines, fontFamily)
 	case os.Getenv("SORA_PRODUCT_ID"):
 		return drawSora(size, width, height, foregroundColor, backgroundColor, lines, fontFamily)
+	case os.Getenv("DONNELLY_PRODUCT_ID"):
+		return drawDonnelly(size, width, height, foregroundColor, backgroundColor, lines, fontFamily)
 	default:
 		return "Invalid product ID: " + productId
 	}
