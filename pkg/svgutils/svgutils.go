@@ -41,7 +41,7 @@ func (s *SVGBuilder) EndGroup() {
 
 // AddPath adds a path to the SVG with specified attributes.
 func (s *SVGBuilder) AddPath(d string, attributes map[string]string) {
-	log.Printf("Adding path: %s", d)
+	// log.Printf("Adding path: %s", d)
 	s.buffer.WriteString(`<path d="` + d + `"`)
 	for key, value := range attributes {
 		s.buffer.WriteString(fmt.Sprintf(` %s="%s"`, key, value))

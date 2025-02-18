@@ -56,6 +56,7 @@ func drawMediumSora(
 		"id":   "my-custom-id",
 	})
 }
+
 func drawLargeSora(
 	builder *svgutils.SVGBuilder,
 	foregroundColor string,
@@ -104,6 +105,7 @@ func drawLargeSora(
 		"id":   "my-custom-id",
 	})
 }
+
 func drawSmallSora(
 	builder *svgutils.SVGBuilder,
 	foregroundColor string,

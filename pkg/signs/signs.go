@@ -56,7 +56,7 @@ func DrawSign(
 	case os.Getenv("RECURSO_PRODUCT_ID"):
 		return drawRecurso(size, width, height, foregroundColor, backgroundColor, lines)
 	case os.Getenv("SESAME_PRODUCT_ID"):
-		return drawSesame(width, height, foregroundColor, backgroundColor, lines, fontFamily)
+		return drawSesame(size, width, height, foregroundColor, backgroundColor, lines, fontFamily)
 	case os.Getenv("SORA_PRODUCT_ID"):
 		return drawSora(size, width, height, foregroundColor, backgroundColor, lines, fontFamily)
 	case os.Getenv("DONNELLY_PRODUCT_ID"):
