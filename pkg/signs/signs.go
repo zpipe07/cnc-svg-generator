@@ -62,6 +62,7 @@ func DrawSign(
 	case os.Getenv("DONNELLY_PRODUCT_ID"):
 		return drawDonnelly(size, width, height, foregroundColor, backgroundColor, lines, fontFamily)
 	default:
-		return "Invalid product ID: " + productId
+		// return "Invalid product ID: " + productId
+		panic("Invalid product ID: " + productId)
 	}
 }
