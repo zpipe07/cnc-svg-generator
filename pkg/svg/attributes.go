@@ -3,7 +3,6 @@ package svg
 import (
 	"bytes"
 	"encoding/xml"
-	"log"
 )
 
 // Define an XML structure for the SVG elements
@@ -14,8 +13,7 @@ type SVG struct {
 }
 
 func modifyOrAddSVGAttributes(svgString string, attributes map[string]string) (string, error) {
-	log.Printf("svgString: %v", svgString)
-	log.Printf("attributes: %v", attributes)
+
 	// Parse the SVG XML
 	var svgData SVG
 	err := xml.Unmarshal([]byte(svgString), &svgData)
