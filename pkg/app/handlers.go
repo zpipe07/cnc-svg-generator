@@ -3,6 +3,7 @@ package app
 import (
 	"cnc-svg-generator/pkg/fonts"
 	"cnc-svg-generator/pkg/svg"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -34,6 +35,15 @@ func (s *Server) GetSvg() gin.HandlerFunc {
 		fontFamilyStr := c.Query("fontFamily")
 		bgColorStr := c.Query("backgroundColor")
 		fgColorStr := c.Query("foregroundColor")
+		// log the query params
+		log.Printf("productId: %s", productId)
+		log.Printf("width: %s", widthStr)
+		log.Printf("height: %s", heightStr)
+		log.Printf("text: %s", text)
+		log.Printf("size: %s", size)
+		log.Printf("fontFamily: %s", fontFamilyStr)
+		log.Printf("backgroundColor: %s", bgColorStr)
+		log.Printf("foregroundColor: %s", fgColorStr)
 
 		// Parse colors
 		backgroundColor, err := svg.ParseColor(bgColorStr)
