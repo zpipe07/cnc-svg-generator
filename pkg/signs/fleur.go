@@ -167,7 +167,7 @@ func drawFleur(
 		// Calculate the total height for the text containers
 		const topPadding = 3.25
 		const bottomPadding = 3.25
-		lineSpacing := 0.75
+		lineSpacing := 0.5
 		availableHeight := height - (topPadding + bottomPadding) - float64(numLines-1)*lineSpacing
 
 		// Determine the heights for each line
@@ -205,8 +205,9 @@ func drawFleur(
 			container = container.Translate(0, height)
 
 			builder.AddPath(container.ToSVG(), map[string]string{
-				"fill":         "none",
-				"stroke":       "pink",
+				"fill": "none",
+				// uncomment to see container
+				// "stroke":       "pink",
 				"stroke-width": "0.025",
 				"id":           fmt.Sprintf("text-container-%d", i),
 			})
