@@ -179,7 +179,7 @@ func drawSesame(
 		lineSpacing := 0.5 // Spacing between lines
 		availableHeight := height - (topPadding + bottomPadding) - float64(numLines-1)*lineSpacing
 
-		// Determine the heights for each line
+		// Determine the dimensions for each line
 		type ContainerDimensions struct {
 			Width  float64
 			Height float64

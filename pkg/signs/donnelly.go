@@ -234,6 +234,7 @@ func drawExtraSmallVertical(
 }
 
 func drawDonnelly(
+	ctx *canvas.Context,
 	size string,
 	width float64,
 	height float64,
@@ -269,82 +270,146 @@ func drawDonnelly(
 		const lineSpacing = 0.5
 		availableHeight := height - 2*padding - float64(numLines-1)*lineSpacing
 
-		// determine heights for each line
-		var containerHeights []float64
+		// determine dimensions for each line
+		type ContainerDimensions struct {
+			Width  float64
+			Height float64
+		}
+		var containerDimensions []ContainerDimensions
 		switch numLines {
 		case 3:
-			containerHeights = []float64{
-				availableHeight * 0.25, // First line
-				availableHeight * 0.5,  // Middle line (taller)
-				availableHeight * 0.25, // Last line
+			containerDimensions = []ContainerDimensions{
+				{Height: availableHeight * 0.25, Width: width - 4.25},
+				{Height: availableHeight * 0.5, Width: width - 3.0},
+				{Height: availableHeight * 0.25, Width: width - 4.25},
 			}
 		case 2:
-			containerHeights = []float64{
-				availableHeight * 0.7, // First line (taller)
-				availableHeight * 0.3, // Last line
+			containerDimensions = []ContainerDimensions{
+				{Height: availableHeight * 0.7, Width: width - 4.25},
+				{Height: availableHeight * 0.3, Width: width - 4.25},
 			}
 		default:
-			containerHeights = []float64{availableHeight} // Single line
+			containerDimensions = []ContainerDimensions{
+				{Height: availableHeight, Width: width - 4.25},
+			}
 		}
 
 		// Calculate the starting y position for the topmost line
 		currentY := height - padding
 
 		for i, line := range lines {
-			containerHeight := containerHeights[i]
-			container := canvas.Rectangle(width-4.25, containerHeight)
-			containerBounds := container.Bounds()
-			containerX := width/2 - containerBounds.W()/2
-			containerY := currentY - containerHeight
+			if size == "extra small vertical" {
+				// Set up font and size
+				fontSize := 3.0
+				face := fontFamily.Face(fontSize, canvas.FontRegular, canvas.FontNormal)
 
-			// Position the container
-			container = container.Translate(containerX, containerY)
-			container = container.Scale(1, -1)
-			container = container.Translate(0, height)
+				// Calculate total text height (sum of all character heights + spacing)
+				totalTextHeight := 0.0
+				charHeights := make([]float64, len(line))
 
-			builder.AddPath(container.ToSVG(), map[string]string{
-				"fill":         "none",
-				"stroke":       "pink",
-				"stroke-width": "0.025",
-				"id":           fmt.Sprintf("text-container-%d", i),
-			})
+				for i, char := range line {
+					textPath, _, err := face.ToPath(string(char))
+					if err != nil {
+						log.Fatalf("Failed to convert text to path: %s", err)
+					}
+					textBounds := textPath.Bounds()
+					charHeights[i] = textBounds.H()
+					totalTextHeight += textBounds.H() * 1.2 // 1.2 factor for spacing
+				}
 
-			// Draw text
-			fontSize := 1.0
-			face := fontFamily.Face(fontSize, canvas.FontRegular, canvas.FontNormal)
-			textPath, _, err := face.ToPath(line)
-			if err != nil {
-				log.Fatalf("Failed to convert text to path: %s", err)
+				// Determine starting Y position to vertically center the text
+				startY := (height-totalTextHeight)/2 + totalTextHeight // Adjust for downward drawing
+
+				// Center horizontally
+				x := width / 2
+
+				// Draw each character
+				y := startY
+				for i, char := range line {
+					textPath, _, err := face.ToPath(string(char))
+					if err != nil {
+						log.Fatalf("Failed to convert text to path: %s", err)
+					}
+
+					// Get character bounds
+					textBounds := textPath.Bounds()
+
+					// Center horizontally
+					xCentered := x - textBounds.W()/2
+
+					// Adjust Y position based on the character height
+					yPositioned := y - charHeights[i]/2
+
+					// Apply transformations
+					textPath = textPath.Translate(xCentered, yPositioned)
+					textPath = textPath.Scale(1, -1)
+					textPath = textPath.Translate(0, height)
+
+					// Add to SVG
+					builder.AddPath(textPath.ToSVG(), map[string]string{
+						"fill": backgroundColor,
+						"id":   fmt.Sprintf("vertical-text-%d", i),
+					})
+
+					// Move down for the next character
+					y -= charHeights[i] * 1.2 // Adjust spacing as needed
+				}
+			} else {
+				containerDimensions := containerDimensions[i]
+				container := canvas.Rectangle(containerDimensions.Width, containerDimensions.Height)
+				containerBounds := container.Bounds()
+				containerX := width/2 - containerBounds.W()/2
+				containerY := currentY - containerDimensions.Height
+
+				// Position the container
+				container = container.Translate(containerX, containerY)
+				container = container.Scale(1, -1)
+				container = container.Translate(0, height)
+
+				builder.AddPath(container.ToSVG(), map[string]string{
+					"fill":         "none",
+					"stroke":       "pink",
+					"stroke-width": "0.025",
+					"id":           fmt.Sprintf("text-container-%d", i),
+				})
+
+				// Draw text
+				fontSize := 1.0
+				face := fontFamily.Face(fontSize, canvas.FontRegular, canvas.FontNormal)
+				textPath, _, err := face.ToPath(line)
+				if err != nil {
+					log.Fatalf("Failed to convert text to path: %s", err)
+				}
+				textBounds := textPath.Bounds()
+				metrics := face.Metrics()
+				ascent := metrics.Ascent
+				descent := metrics.Descent
+
+				// Scale the text to fit within the container
+				scale := min(containerBounds.W()/textBounds.W(), containerBounds.H()/textBounds.H())
+				textPath.Scale(scale, scale)
+
+				// Recalculate text position after scaling
+				textBounds = textPath.Bounds()
+				x := containerX +
+					containerBounds.W()/2 -
+					textBounds.W()/2
+				y := containerY +
+					containerBounds.H()/2 +
+					descent*scale -
+					((ascent + descent) / 2 * scale)
+				textPath = textPath.Translate(x, y)
+				textPath = textPath.Scale(1, -1)
+				textPath = textPath.Translate(0, height)
+
+				builder.AddPath(textPath.ToSVG(), map[string]string{
+					"fill": backgroundColor,
+					"id":   fmt.Sprintf("text-line-%d", i),
+				})
+
+				// Update currentY for the next line
+				currentY -= containerDimensions.Height + lineSpacing
 			}
-			textBounds := textPath.Bounds()
-			metrics := face.Metrics()
-			ascent := metrics.Ascent
-			descent := metrics.Descent
-
-			// Scale the text to fit within the container
-			scale := min(containerBounds.W()/textBounds.W(), containerBounds.H()/textBounds.H())
-			textPath.Scale(scale, scale)
-
-			// Recalculate text position after scaling
-			textBounds = textPath.Bounds()
-			x := containerX +
-				containerBounds.W()/2 -
-				textBounds.W()/2
-			y := containerY +
-				containerBounds.H()/2 +
-				descent*scale -
-				((ascent + descent) / 2 * scale)
-			textPath = textPath.Translate(x, y)
-			textPath = textPath.Scale(1, -1)
-			textPath = textPath.Translate(0, height)
-
-			builder.AddPath(textPath.ToSVG(), map[string]string{
-				"fill": backgroundColor,
-				"id":   fmt.Sprintf("text-line-%d", i),
-			})
-
-			// Update currentY for the next line
-			currentY -= containerHeight + lineSpacing
 		}
 	}
 

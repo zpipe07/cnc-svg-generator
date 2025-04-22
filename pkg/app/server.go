@@ -27,9 +27,8 @@ func (s *Server) Run() error {
 	if port == "" {
 		port = "8080" // Default to 8080 if no PORT is set
 	}
-
-	err := r.Run("0.0.0.0:" + port)
-	// err := r.Run("localhost:" + port)
+	host := os.Getenv("HOST")
+	err := r.Run(host + ":" + port)
 	if err != nil {
 		log.Printf("Server - there was an error calling Run on router: %v", err)
 		return err

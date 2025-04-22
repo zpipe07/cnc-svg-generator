@@ -214,7 +214,7 @@ func drawDeco(
 
 		for i, line := range lines {
 			// containerHeight := containerHeights[i]
-			log.Print("i: ", i)
+			// log.Print("i: ", i)
 			containerHeight := containerHeights[i]
 			container := canvas.Rectangle(width-2.0, containerHeight)
 			containerBounds := container.Bounds()

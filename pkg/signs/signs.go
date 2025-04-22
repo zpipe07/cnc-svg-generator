@@ -7,7 +7,7 @@ import (
 )
 
 func DrawSign(
-	// ctx *canvas.Context,
+	ctx *canvas.Context,
 	// productConfig svg.ProductConfig,
 	productId string,
 	size string,
@@ -50,7 +50,7 @@ func DrawSign(
 	case os.Getenv("ALDER_PRODUCT_ID"):
 		return drawAlder(width, height, foregroundColor, backgroundColor, lines, fontFamily)
 	case os.Getenv("FLEUR_PRODUCT_ID"):
-		return drawFleur(width, height, foregroundColor, backgroundColor, lines, fontFamily)
+		return drawFleur(size, width, height, foregroundColor, backgroundColor, lines, fontFamily)
 	case os.Getenv("CEZAR_PRODUCT_ID"):
 		return drawCezar(width, height, foregroundColor, backgroundColor, lines)
 	case os.Getenv("RECURSO_PRODUCT_ID"):
@@ -60,7 +60,7 @@ func DrawSign(
 	case os.Getenv("SORA_PRODUCT_ID"):
 		return drawSora(size, width, height, foregroundColor, backgroundColor, lines, fontFamily)
 	case os.Getenv("DONNELLY_PRODUCT_ID"):
-		return drawDonnelly(size, width, height, foregroundColor, backgroundColor, lines, fontFamily)
+		return drawDonnelly(ctx, size, width, height, foregroundColor, backgroundColor, lines, fontFamily)
 	default:
 		// return "Invalid product ID: " + productId
 		panic("Invalid product ID: " + productId)
