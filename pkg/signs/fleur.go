@@ -221,7 +221,7 @@ func drawFleur(
 			builder.AddPath(container.ToSVG(), map[string]string{
 				"fill": "none",
 				// uncomment to see container
-				"stroke":       "pink",
+				// "stroke":       "pink",
 				"stroke-width": "0.025",
 				"id":           fmt.Sprintf("text-container-%d", i),
 			})
