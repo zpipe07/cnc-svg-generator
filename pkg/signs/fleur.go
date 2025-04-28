@@ -149,13 +149,25 @@ func drawFleur(
 	lines []string,
 	fontFamily *canvas.FontFamily,
 ) string {
+
+	// Define color map
+	colors := map[string]string{
+		"black": "#000000",
+		"white": "#FFFFFF",
+		"green": "#013801",
+		"tan":   "#e5c498",
+		"brown": "#552a0b",
+		"blue":  "#0000e4",
+		"grey":  "#D6DAD2",
+	}
+
 	// Initialize SVG builder
 	builder := svgutils.NewSVGBuilder(width, height)
 
 	if size == "large" {
-		drawLargeFleur(builder, foregroundColor, backgroundColor)
+		drawLargeFleur(builder, colors[foregroundColor], colors[backgroundColor])
 	} else if size == "medium" {
-		drawMediumFleur(builder, foregroundColor, backgroundColor)
+		drawMediumFleur(builder, colors[foregroundColor], colors[backgroundColor])
 	} else {
 		log.Fatalf("Invalid size: %s", size)
 	}
@@ -170,22 +182,24 @@ func drawFleur(
 		lineSpacing := 0.5
 		availableHeight := height - (topPadding + bottomPadding) - float64(numLines-1)*lineSpacing
 
-		// Determine the heights for each line
-		var containerHeights []float64
+		// determine dimensions for each line
+		type ContainerDimensions struct {
+			Width  float64
+			Height float64
+		}
+		var containerDimensions []ContainerDimensions
 		switch numLines {
 		case 3:
-			containerHeights = []float64{
-				availableHeight * 0.25, // First line
-				availableHeight * 0.5,  // Middle line (taller)
-				availableHeight * 0.25, // Last line
+			containerDimensions = []ContainerDimensions{
+				{Height: availableHeight * 0.25, Width: width - 4.75},
+				{Height: availableHeight * 0.5, Width: width - 3.0},
+				{Height: availableHeight * 0.25, Width: width - 4.75},
 			}
 		case 2:
-			containerHeights = []float64{
-				availableHeight * 0.6, // First line (taller)
-				availableHeight * 0.4, // Last line
+			containerDimensions = []ContainerDimensions{
+				{Height: availableHeight * 0.6, Width: width - 4.25},
+				{Height: availableHeight * 0.4, Width: width - 4.25},
 			}
-		default:
-			containerHeights = []float64{availableHeight} // Single line
 		}
 
 		// Calculate the starting y position for the topmost line
@@ -193,11 +207,11 @@ func drawFleur(
 
 		for i, line := range lines {
 			// draw text container
-			containerHeight := containerHeights[i]
-			container := canvas.Rectangle(width-2.0, containerHeight)
+			containerDimensions := containerDimensions[i]
+			container := canvas.Rectangle(containerDimensions.Width, containerDimensions.Height)
 			containerBounds := container.Bounds()
 			containerX := width/2 - containerBounds.W()/2
-			containerY := currentY - containerHeight
+			containerY := currentY - containerDimensions.Height
 
 			// Position the container
 			container = container.Translate(containerX, containerY)
@@ -242,12 +256,12 @@ func drawFleur(
 			textPath = textPath.Translate(0, height)
 
 			builder.AddPath(textPath.ToSVG(), map[string]string{
-				"fill": backgroundColor,
+				"fill": colors[backgroundColor],
 				"id":   fmt.Sprintf("text-line-%d", i),
 			})
 
 			// Update currentY for the next line
-			currentY -= containerHeight + lineSpacing
+			currentY -= containerDimensions.Height + lineSpacing
 		}
 	}
 
