@@ -62,6 +62,9 @@ var UnicaOne []byte
 //go:embed PoorRichardOpti.otf
 var PoorRichard []byte
 
+//go:embed Marigold.otf
+var Marigold []byte
+
 func ParseFontFamily(fontFamilyStr string) (*canvas.FontFamily, error) {
 	var fontFamily *canvas.FontFamily
 	switch fontFamilyStr {
@@ -164,6 +167,12 @@ func ParseFontFamily(fontFamilyStr string) (*canvas.FontFamily, error) {
 	case "poorrichard":
 		fontFamily = canvas.NewFontFamily("PoorRichard")
 		if err := fontFamily.LoadFont(PoorRichard, 0, canvas.FontRegular); err != nil {
+			log.Println("Failed to load AdventPro font: ", err)
+			panic("Font loading error")
+		}
+	case "marigold":
+		fontFamily = canvas.NewFontFamily("Marigold")
+		if err := fontFamily.LoadFont(Marigold, 0, canvas.FontRegular); err != nil {
 			log.Println("Failed to load AdventPro font: ", err)
 			panic("Font loading error")
 		}

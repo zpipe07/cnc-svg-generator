@@ -221,7 +221,7 @@ func drawFleur(
 			builder.AddPath(container.ToSVG(), map[string]string{
 				"fill": "none",
 				// uncomment to see container
-				// "stroke":       "pink",
+				"stroke":       "pink",
 				"stroke-width": "0.025",
 				"id":           fmt.Sprintf("text-container-%d", i),
 			})
@@ -234,7 +234,6 @@ func drawFleur(
 				log.Fatalf("Failed to convert text to path: %s", err)
 			}
 			textBounds := textPath.Bounds()
-			metrics := face.Metrics()
 
 			// Scale the text to fit within the container
 			scale := min(containerBounds.W()/textBounds.W(), containerBounds.H()/textBounds.H())
@@ -245,12 +244,10 @@ func drawFleur(
 			fastTextBounds := textPath.FastBounds()
 			fmt.Printf("textBounds: %v\n", textBounds)
 			fmt.Printf("fastTextBounds: %v\n", fastTextBounds)
-			x := containerX +
-				containerBounds.W()/2 -
-				textBounds.W()/2
-			y := containerY +
-				containerBounds.H()/2 -
-				((metrics.YMax+metrics.YMin)*scale)/2
+			// Add a small offset to shift text left
+			offset := 0.035
+			x := containerX + (containerBounds.W()-textBounds.W())/2 - offset*scale
+			y := containerY + (containerBounds.H()-textBounds.H())/2
 			textPath = textPath.Translate(x, y)
 			textPath = textPath.Scale(1, -1)
 			textPath = textPath.Translate(0, height)
