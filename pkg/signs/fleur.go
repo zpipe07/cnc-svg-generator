@@ -221,31 +221,28 @@ func drawFleur(
 			builder.AddPath(container.ToSVG(), map[string]string{
 				"fill": "none",
 				// uncomment to see container
-				// "stroke":       "pink",
+				"stroke":       "pink",
 				"stroke-width": "0.025",
 				"id":           fmt.Sprintf("text-container-%d", i),
 			})
 
 			// Draw text
-			fontSize := 1.0
-			face := fontFamily.Face(fontSize, canvas.FontRegular, canvas.FontNormal)
+			fontSize := 20.0
+			face := fontFamily.Face(fontSize, canvas.FontBold, canvas.FontNormal)
 			textPath, _, err := face.ToPath(line)
 			if err != nil {
 				log.Fatalf("Failed to convert text to path: %s", err)
 			}
-			textBounds := textPath.Bounds()
+			textBounds := textPath.FastBounds()
 
 			// Scale the text to fit within the container
 			scale := min(containerBounds.W()/textBounds.W(), containerBounds.H()/textBounds.H())
 			textPath = textPath.Scale(scale, scale)
 
 			// Recalculate text position after scaling
-			textBounds = textPath.Bounds()
-			fastTextBounds := textPath.FastBounds()
-			fmt.Printf("textBounds: %v\n", textBounds)
-			fmt.Printf("fastTextBounds: %v\n", fastTextBounds)
+			textBounds = textPath.FastBounds()
 			// Add a small offset to shift text left
-			offset := 0.035
+			offset := 0.5
 			x := containerX + (containerBounds.W()-textBounds.W())/2 - offset*scale
 			y := containerY + (containerBounds.H()-textBounds.H())/2
 			textPath = textPath.Translate(x, y)
