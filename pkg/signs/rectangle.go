@@ -16,6 +16,9 @@ func drawRectangle(
 	lines []string,
 	fontFamily *canvas.FontFamily,
 ) string {
+	foregroundColor = GetColor(foregroundColor)
+	backgroundColor = GetColor(backgroundColor)
+
 	// Initialize SVG builder
 	builder := svgutils.NewSVGBuilder(width, height)
 
