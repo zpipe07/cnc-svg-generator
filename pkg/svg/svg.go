@@ -16,6 +16,7 @@ func GenerateSVG(
 	fontFamily *canvas.FontFamily,
 	foregroundColor string,
 	backgroundColor string,
+	strokeOnly bool,
 ) string {
 
 	// Create a new canvas with dynamic width and height
@@ -35,6 +36,7 @@ func GenerateSVG(
 		backgroundColor,
 		lines,
 		fontFamily,
+		strokeOnly,
 	)
 
 	// Export the canvas to an SVG

@@ -35,6 +35,7 @@ func (s *Server) GetSvg() gin.HandlerFunc {
 		fontFamilyStr := c.Query("fontFamily")
 		bgColorStr := c.Query("backgroundColor")
 		fgColorStr := c.Query("foregroundColor")
+		strokeOnlyStr := c.Query("strokeOnly")
 		// log the query params
 		log.Printf("productId: %s", productId)
 		log.Printf("width: %s", widthStr)
@@ -44,6 +45,7 @@ func (s *Server) GetSvg() gin.HandlerFunc {
 		log.Printf("fontFamily: %s", fontFamilyStr)
 		log.Printf("backgroundColor: %s", bgColorStr)
 		log.Printf("foregroundColor: %s", fgColorStr)
+		log.Printf("strokeOnly: %s", strokeOnlyStr)
 
 		// Parse colors
 		backgroundColor, err := svg.ParseColor(bgColorStr)
@@ -84,6 +86,16 @@ func (s *Server) GetSvg() gin.HandlerFunc {
 			return
 		}
 
+		strokeOnly := false
+		if strokeOnlyStr != "" {
+			var err error
+			strokeOnly, err = strconv.ParseBool(strokeOnlyStr)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid strokeOnly."})
+				return
+			}
+		}
+
 		svgContent := svg.GenerateSVG(
 			productId,
 			size,
@@ -93,6 +105,7 @@ func (s *Server) GetSvg() gin.HandlerFunc {
 			fontFamily,
 			foregroundColor,
 			backgroundColor,
+			strokeOnly,
 		)
 
 		c.Header("Content-Type", "image/svg+xml")
