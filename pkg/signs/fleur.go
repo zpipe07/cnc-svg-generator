@@ -1,6 +1,7 @@
 package signs
 
 import (
+	"cnc-svg-generator/pkg/fonts"
 	"cnc-svg-generator/pkg/svgutils"
 	"fmt"
 	"log"
@@ -97,7 +98,7 @@ func drawMediumFleur(
 	builder.StartGroup("Outside", map[string]string{})
 	builder.AddPath(outerEdge.ToSVG(), map[string]string{
 		"fill":         backgroundColor,
-		"id":           "outer-edge",
+		"id":           "outside-path",
 		"stroke":       map[bool]string{true: "black", false: "none"}[strokeOnly],
 		"stroke-width": "0.025",
 	})
@@ -112,7 +113,7 @@ func drawMediumFleur(
 	builder.StartGroup("Round", map[string]string{})
 	builder.AddPath(roundedEdge.ToSVG(), map[string]string{
 		"fill":         foregroundColor,
-		"id":           "rounded-edge",
+		"id":           "round-path",
 		"stroke":       map[bool]string{true: "black", false: "none"}[strokeOnly],
 		"stroke-width": "0.025",
 	})
@@ -154,34 +155,18 @@ func drawMediumFleur(
 	}
 }
 
-func drawFleur(
-	size string,
+func drawFleurText(
+	builder *svgutils.SVGBuilder,
 	width float64,
 	height float64,
-	foregroundColor string,
 	backgroundColor string,
 	lines []string,
-	fontFamily *canvas.FontFamily,
 	strokeOnly bool,
-) string {
-
-	if strokeOnly {
-		foregroundColor = "transparent"
-		backgroundColor = "transparent"
-	} else {
-		foregroundColor = GetColor(foregroundColor)
-		backgroundColor = GetColor(backgroundColor)
-	}
-
-	// Initialize SVG builder
-	builder := svgutils.NewSVGBuilder(width, height)
-
-	if size == "large" {
-		drawLargeFleur(builder, foregroundColor, backgroundColor, strokeOnly)
-	} else if size == "medium" {
-		drawMediumFleur(builder, foregroundColor, backgroundColor, strokeOnly)
-	} else {
-		log.Fatalf("Invalid size: %s", size)
+) {
+	fontFamily := canvas.NewFontFamily("Marigold")
+	if err := fontFamily.LoadFont(fonts.Marigold, 0, canvas.FontRegular); err != nil {
+		log.Println("Failed to load Marigold font: ", err)
+		panic("Font loading error")
 	}
 
 	// draw text
@@ -273,6 +258,45 @@ func drawFleur(
 			currentY -= containerDimensions.Height + lineSpacing
 		}
 	}
+}
+
+func drawFleur(
+	size string,
+	width float64,
+	height float64,
+	foregroundColor string,
+	backgroundColor string,
+	lines []string,
+	strokeOnly bool,
+) string {
+
+	if strokeOnly {
+		foregroundColor = "transparent"
+		backgroundColor = "transparent"
+	} else {
+		foregroundColor = GetColor(foregroundColor)
+		backgroundColor = GetColor(backgroundColor)
+	}
+
+	// Initialize SVG builder
+	builder := svgutils.NewSVGBuilder(width, height)
+
+	if size == "large" {
+		drawLargeFleur(builder, foregroundColor, backgroundColor, strokeOnly)
+	} else if size == "medium" {
+		drawMediumFleur(builder, foregroundColor, backgroundColor, strokeOnly)
+	} else {
+		log.Fatalf("Invalid size: %s", size)
+	}
+
+	drawFleurText(
+		builder,
+		width,
+		height,
+		backgroundColor,
+		lines,
+		strokeOnly,
+	)
 
 	builder.EndGroup()
 

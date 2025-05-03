@@ -47,11 +47,11 @@ func DrawSign(
 	case os.Getenv("RECTANGLE_PRODUCT_ID"):
 		return drawRectangle(width, height, foregroundColor, backgroundColor, lines, fontFamily)
 	case os.Getenv("DECO_PRODUCT_ID"):
-		return drawDeco(size, width, height, foregroundColor, backgroundColor, lines)
+		return drawDeco(size, width, height, foregroundColor, backgroundColor, lines, strokeOnly)
 	case os.Getenv("ALDER_PRODUCT_ID"):
 		return drawAlder(width, height, foregroundColor, backgroundColor, lines, fontFamily)
 	case os.Getenv("FLEUR_PRODUCT_ID"):
-		return drawFleur(size, width, height, foregroundColor, backgroundColor, lines, fontFamily, strokeOnly)
+		return drawFleur(size, width, height, foregroundColor, backgroundColor, lines, strokeOnly)
 	case os.Getenv("CEZAR_PRODUCT_ID"):
 		return drawCezar(width, height, foregroundColor, backgroundColor, lines)
 	case os.Getenv("RECURSO_PRODUCT_ID"):
@@ -62,6 +62,8 @@ func DrawSign(
 		return drawSora(size, width, height, foregroundColor, backgroundColor, lines, fontFamily)
 	case os.Getenv("DONNELLY_PRODUCT_ID"):
 		return drawDonnelly(ctx, size, width, height, foregroundColor, backgroundColor, lines, fontFamily)
+	case os.Getenv("RIBBON_PRODUCT_ID"):
+		return drawRibbon(size, width, height, foregroundColor, backgroundColor, lines, fontFamily, strokeOnly, ctx)
 	default:
 		// return "Invalid product ID: " + productId
 		panic("Invalid product ID: " + productId)
