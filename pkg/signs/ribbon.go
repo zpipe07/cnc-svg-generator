@@ -269,6 +269,12 @@ func drawExtraSmallVerticalRibbonText(
 		scaledPath = scaledPath.Translate(x, y)
 		scaledPath = scaledPath.Scale(1, -1)
 		scaledPath = scaledPath.Translate(0, height)
+		// Rotate 90 degrees around the character's center point
+		centerX := scaledPath.FastBounds().X0 + scaledPath.FastBounds().W()/2
+		centerY := scaledPath.FastBounds().Y0 + scaledPath.FastBounds().H()/2
+		scaledPath = scaledPath.Translate(-centerX, -centerY)
+		scaledPath = scaledPath.Transform(canvas.Identity.Rotate(90))
+		scaledPath = scaledPath.Translate(centerX, centerY)
 
 		builder.AddPath(scaledPath.ToSVG(), map[string]string{
 			"fill":         backgroundColor,
