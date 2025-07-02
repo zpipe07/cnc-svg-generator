@@ -1,0 +1,15 @@
+name: Deploy to Production
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render Production Deploy
+        run: |
+          curl -X POST "$RENDER_PRODUCTION_DEPLOY_HOOK"
+        env:
+          RENDER_PRODUCTION_DEPLOY_HOOK: ${{ secrets.RENDER_PRODUCTION_DEPLOY_HOOK }}

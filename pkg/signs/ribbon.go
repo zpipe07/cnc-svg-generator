@@ -88,7 +88,7 @@ func drawExtraSmallRibbonText(
 	})
 
 	// draw text
-	fontSize := 20.0
+	fontSize := 12.0
 	face := fontFamily.Face(fontSize, canvas.FontRegular, canvas.FontNormal)
 	textPath, _, err := face.ToPath(lines[0])
 	if err != nil {
@@ -97,6 +97,13 @@ func drawExtraSmallRibbonText(
 	textBounds := textPath.FastBounds()
 	scale := min(containerBounds.W()/textBounds.W(), containerBounds.H()/textBounds.H())
 	textPath = textPath.Scale(scale, scale)
+
+	metrics := face.Metrics()
+	fmt.Printf("metrics: %+v\n", metrics)
+	descent := metrics.Descent
+	fmt.Printf("descent: %+v\n", descent)
+	scaledDescent := descent * scale
+	fmt.Printf("scaledDescent: %+v\n", scaledDescent)
 
 	// Check for descenders (characters that go below baseline)
 	hasDescenders := false
@@ -113,7 +120,8 @@ func drawExtraSmallRibbonText(
 	xOffset := 0.3
 	yOffset := 0.05
 	if hasDescenders {
-		yOffset = 1.0
+		// yOffset = 1.0
+		// yOffset = 1.0 - scaledDescent
 	}
 	x := containerX + (containerBounds.W()-textBounds.W())/2 - xOffset*scale
 	y := containerY + (containerBounds.H()-textBounds.H())/2 + yOffset*scale
@@ -307,7 +315,9 @@ func drawRibbon(
 	}
 
 	if fontFamily == nil {
-		log.Fatalf("Error: Font family is required but was not provided")
+		// fmt.Print("foobar")
+		log.Fatalf("error: font family is required but was not provided")
+		// return fmt.Errorf("error: font family is required but was not provided").Error()
 	}
 
 	// Initialize SVG builder
