@@ -114,22 +114,29 @@ func drawRectangle(
 			}
 			textBounds := textPath.Bounds()
 			metrics := face.Metrics()
-			ascent := metrics.Ascent
-			descent := metrics.Descent
 
 			// Scale the text to fit within the container
 			scale := min(containerBounds.W()/textBounds.W(), containerBounds.H()/textBounds.H())
 			textPath.Scale(scale, scale)
 
-			// Recalculate text position after scaling
+			// Recalculate text bounds and metrics after scaling
 			textBounds = textPath.Bounds()
-			x := containerX +
-				containerBounds.W()/2 -
-				textBounds.W()/2
-			y := containerY +
-				containerBounds.H()/2 +
-				descent*scale -
-				((ascent + descent) / 2 * scale)
+			ascent := metrics.Ascent * scale
+			descent := metrics.Descent * scale
+
+			// Calculate the center of the container
+			centerX := containerX + containerBounds.W()/2
+			centerY := containerY + containerBounds.H()/2
+
+			// For vertical centering, we want to center the text based on its visual center
+			// which is the midpoint between the baseline and the top of the ascenders
+			// This accounts for descenders extending below the baseline
+			visualCenterOffset := (ascent - descent) / 2
+
+			// Center horizontally and vertically
+			x := centerX - textBounds.W()/2
+			y := centerY - visualCenterOffset
+
 			textPath = textPath.Translate(x, y)
 			textPath = textPath.Scale(1, -1)
 			textPath = textPath.Translate(0, height)
