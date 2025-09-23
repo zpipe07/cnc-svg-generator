@@ -99,10 +99,10 @@ func drawRectangle(
 			container = container.Translate(0, height)
 
 			builder.AddPath(container.ToSVG(), map[string]string{
-				"fill":         "none",
-				"stroke":       "pink",
-				"stroke-width": "0.025",
-				"id":           fmt.Sprintf("text-container-%d", i),
+				"fill": "none",
+				// "stroke":       "pink",
+				// "stroke-width": "0.025",
+				"id": fmt.Sprintf("text-container-%d", i),
 			})
 
 			// Draw text
@@ -119,8 +119,7 @@ func drawRectangle(
 			scale := min(containerBounds.W()/textBounds.W(), containerBounds.H()/textBounds.H())
 			textPath.Scale(scale, scale)
 
-			// Recalculate text bounds and metrics after scaling
-			textBounds = textPath.Bounds()
+			// Recalculate metrics after scaling
 			ascent := metrics.Ascent * scale
 			descent := metrics.Descent * scale
 
@@ -133,8 +132,17 @@ func drawRectangle(
 			// This accounts for descenders extending below the baseline
 			visualCenterOffset := (ascent - descent) / 2
 
+			// For horizontal centering, use the font's TextWidth method
+			// This gives us the actual advance width of the text, accounting for
+			// font-specific spacing and kerning, which should give better centering
+			textWidth := face.TextWidth(line)
+			textWidth *= scale // Apply the same scaling we used for the path
+
+			// Use the TextWidth for more accurate horizontal centering
+			textCenterX := textWidth / 2
+
 			// Center horizontally and vertically
-			x := centerX - textBounds.W()/2
+			x := centerX - textCenterX
 			y := centerY - visualCenterOffset
 
 			textPath = textPath.Translate(x, y)
