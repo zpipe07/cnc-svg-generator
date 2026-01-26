@@ -15,9 +15,12 @@ func drawRectangle(
 	backgroundColor string,
 	lines []string,
 	fontFamily *canvas.FontFamily,
+	strokeOnly bool,
 ) string {
-	foregroundColor = GetColor(foregroundColor)
-	backgroundColor = GetColor(backgroundColor)
+	if !strokeOnly {
+		foregroundColor = GetColor(foregroundColor)
+		backgroundColor = GetColor(backgroundColor)
+	}
 
 	// Initialize SVG builder
 	builder := svgutils.NewSVGBuilder(width, height)
@@ -26,8 +29,10 @@ func drawRectangle(
 	outerEdge := canvas.RoundedRectangle(width, height, 0.25)
 	builder.StartGroup("Outer Edge", map[string]string{})
 	builder.AddPath(outerEdge.ToSVG(), map[string]string{
-		"fill": backgroundColor,
-		"id":   "outer-edge",
+		"fill":         map[bool]string{true: "none", false: backgroundColor}[strokeOnly],
+		"id":           "outer-edge",
+		"stroke":       map[bool]string{true: "black", false: "none"}[strokeOnly],
+		"stroke-width": "0.025",
 	})
 	builder.EndGroup()
 
@@ -36,8 +41,10 @@ func drawRectangle(
 	roundedEdge = roundedEdge.Translate(0.25, 0.25)
 	builder.StartGroup("Rounded Edge", map[string]string{})
 	builder.AddPath(roundedEdge.ToSVG(), map[string]string{
-		"fill": foregroundColor,
-		"id":   "rounded-edge",
+		"fill":         map[bool]string{true: "none", false: foregroundColor}[strokeOnly],
+		"id":           "rounded-edge",
+		"stroke":       map[bool]string{true: "black", false: "none"}[strokeOnly],
+		"stroke-width": "0.025",
 	})
 	builder.EndGroup()
 
@@ -46,14 +53,18 @@ func drawRectangle(
 	borderOuter = borderOuter.Translate(0.5, 0.5)
 	builder.StartGroup("Vcarve", map[string]string{})
 	builder.AddPath(borderOuter.ToSVG(), map[string]string{
-		"fill": backgroundColor,
-		"id":   "my-custom-id",
+		"fill":         map[bool]string{true: "none", false: backgroundColor}[strokeOnly],
+		"id":           "my-custom-id",
+		"stroke":       map[bool]string{true: "black", false: "none"}[strokeOnly],
+		"stroke-width": "0.025",
 	})
 	borderInner := canvas.RoundedRectangle(width-1.25, height-1.25, 0.1)
 	borderInner = borderInner.Translate(0.625, 0.625)
 	builder.AddPath(borderInner.ToSVG(), map[string]string{
-		"fill": foregroundColor,
-		"id":   "my-custom-id",
+		"fill":         map[bool]string{true: "none", false: foregroundColor}[strokeOnly],
+		"id":           "my-custom-id",
+		"stroke":       map[bool]string{true: "black", false: "none"}[strokeOnly],
+		"stroke-width": "0.025",
 	})
 
 	// draw text
@@ -140,10 +151,12 @@ func drawRectangle(
 			textPath = textPath.Scale(1, -1)
 			textPath = textPath.Translate(0, height)
 
-			builder.AddPath(textPath.ToSVG(), map[string]string{
-				"fill": backgroundColor,
-				"id":   fmt.Sprintf("text-line-%d", i),
-			})
+		builder.AddPath(textPath.ToSVG(), map[string]string{
+			"fill":         map[bool]string{true: "none", false: backgroundColor}[strokeOnly],
+			"id":           fmt.Sprintf("text-line-%d", i),
+			"stroke":       map[bool]string{true: "black", false: "none"}[strokeOnly],
+			"stroke-width": "0.025",
+		})
 
 			// Update currentY for the next line
 			currentY -= containerHeight + lineSpacing
