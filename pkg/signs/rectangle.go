@@ -99,7 +99,8 @@ func drawRectangle(
 			container = container.Translate(0, height)
 
 			builder.AddPath(container.ToSVG(), map[string]string{
-				"fill": "none",
+				"fill":   "none",
+				"stroke": "none",
 				// "stroke":       "pink",
 				// "stroke-width": "0.025",
 				"id": fmt.Sprintf("text-container-%d", i),
