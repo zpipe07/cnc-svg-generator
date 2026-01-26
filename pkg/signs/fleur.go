@@ -231,19 +231,28 @@ func drawFleurText(
 			if err != nil {
 				log.Fatalf("Failed to convert text to path: %s", err)
 			}
-			textBounds := textPath.FastBounds()
+			textBounds := textPath.Bounds()
 
 			// Scale the text to fit within the container
 			scale := min(containerBounds.W()/textBounds.W(), containerBounds.H()/textBounds.H())
 			textPath = textPath.Scale(scale, scale)
 
-			// Recalculate text position after scaling
-			textBounds = textPath.FastBounds()
-			// Add a small offset to shift text left
-			xOffset := 0.5
-			yOffset := 0.1
-			x := containerX + (containerBounds.W()-textBounds.W())/2 - xOffset*scale
-			y := containerY + (containerBounds.H()-textBounds.H())/2 + yOffset*scale
+			// Recalculate text bounds after scaling to get actual rendered dimensions
+			textBounds = textPath.Bounds()
+
+			// Calculate the center of the container
+			centerX := containerX + containerBounds.W()/2
+			centerY := containerY + containerBounds.H()/2
+
+			// Calculate the center of the text's actual bounding box
+			// This uses the real rendered glyph bounds, not font metrics,
+			// which ensures proper centering regardless of font design choices
+			textCenterX := textBounds.X0 + textBounds.W()/2
+			textCenterY := textBounds.Y0 + textBounds.H()/2
+
+			// Translate so text center aligns with container center
+			x := centerX - textCenterX
+			y := centerY - textCenterY
 			textPath = textPath.Translate(x, y)
 			textPath = textPath.Scale(1, -1)
 			textPath = textPath.Translate(0, height)
