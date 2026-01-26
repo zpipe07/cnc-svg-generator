@@ -113,37 +113,27 @@ func drawRectangle(
 				log.Fatalf("Failed to convert text to path: %s", err)
 			}
 			textBounds := textPath.Bounds()
-			metrics := face.Metrics()
 
 			// Scale the text to fit within the container
 			scale := min(containerBounds.W()/textBounds.W(), containerBounds.H()/textBounds.H())
 			textPath.Scale(scale, scale)
 
-			// Recalculate metrics after scaling
-			ascent := metrics.Ascent * scale
-			descent := metrics.Descent * scale
+			// Recalculate text bounds after scaling to get actual rendered dimensions
+			textBounds = textPath.Bounds()
 
 			// Calculate the center of the container
 			centerX := containerX + containerBounds.W()/2
 			centerY := containerY + containerBounds.H()/2
 
-			// For vertical centering, we want to center the text based on its visual center
-			// which is the midpoint between the baseline and the top of the ascenders
-			// This accounts for descenders extending below the baseline
-			visualCenterOffset := (ascent - descent) / 2
+			// Calculate the center of the text's actual bounding box
+			// This uses the real rendered glyph bounds, not font metrics,
+			// which ensures proper centering regardless of font design choices
+			textCenterX := textBounds.X0 + textBounds.W()/2
+			textCenterY := textBounds.Y0 + textBounds.H()/2
 
-			// For horizontal centering, use the font's TextWidth method
-			// This gives us the actual advance width of the text, accounting for
-			// font-specific spacing and kerning, which should give better centering
-			textWidth := face.TextWidth(line)
-			textWidth *= scale // Apply the same scaling we used for the path
-
-			// Use the TextWidth for more accurate horizontal centering
-			textCenterX := textWidth / 2
-
-			// Center horizontally and vertically
+			// Translate so text center aligns with container center
 			x := centerX - textCenterX
-			y := centerY - visualCenterOffset
+			y := centerY - textCenterY
 
 			textPath = textPath.Translate(x, y)
 			textPath = textPath.Scale(1, -1)
