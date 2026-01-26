@@ -45,7 +45,7 @@ func DrawSign(
 	case os.Getenv("ELLIPSE_PRODUCT_ID"):
 		return drawEllipse(width, height, foregroundColor, backgroundColor, lines, fontFamily)
 	case os.Getenv("RECTANGLE_PRODUCT_ID"):
-		return drawRectangle(width, height, foregroundColor, backgroundColor, lines, fontFamily)
+		return drawRectangle(width, height, foregroundColor, backgroundColor, lines, fontFamily, strokeOnly)
 	case os.Getenv("DECO_PRODUCT_ID"):
 		return drawDeco(size, width, height, foregroundColor, backgroundColor, lines, strokeOnly)
 	case os.Getenv("ALDER_PRODUCT_ID"):
