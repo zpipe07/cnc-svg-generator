@@ -182,38 +182,45 @@ func drawSora(
 
 	if numLines > 0 {
 		// Calculate the total height for the text containers
-		const topPadding = 2.0
+		const topPadding = 1.5
 		const bottomPadding = 1.0
 		lineSpacing := 0.5
 		availableHeight := height - (topPadding + bottomPadding) - float64(numLines-1)*lineSpacing
 
-		// Determine the heights for each line
-		var containerHeights []float64
+		// determine dimensions for each line
+		type ContainerDimensions struct {
+			Width  float64
+			Height float64
+		}
+		var containerDimensions []ContainerDimensions
 		switch numLines {
 		case 3:
-			containerHeights = []float64{
-				availableHeight * 0.2, // First line
-				availableHeight * 0.5, // Middle line (taller)
-				availableHeight * 0.3, // Last line
+			containerDimensions = []ContainerDimensions{
+				{Height: availableHeight * 0.2, Width: width - 5.25},
+				{Height: availableHeight * 0.5, Width: width - 2.25},
+				{Height: availableHeight * 0.3, Width: width - 2.25},
 			}
 		case 2:
-			containerHeights = []float64{
-				availableHeight * 0.7, // First line (taller)
-				availableHeight * 0.3, // Last line
+			containerDimensions = []ContainerDimensions{
+				{Height: availableHeight * 0.7, Width: width - 4.5},
+				{Height: availableHeight * 0.3, Width: width - 2.25},
 			}
 		default:
-			containerHeights = []float64{availableHeight} // Single line
+			containerDimensions = []ContainerDimensions{
+				{Height: availableHeight, Width: width - 3.0},
+			}
 		}
 
 		// Calculate the starting y position for the topmost line
 		currentY := height - topPadding
 
 		for i, line := range lines {
-			containerHeight := containerHeights[i]
-			container := canvas.Rectangle(width-3.0, containerHeight)
+			// draw text container
+			containerDimension := containerDimensions[i]
+			container := canvas.Rectangle(containerDimension.Width, containerDimension.Height)
 			containerBounds := container.Bounds()
 			containerX := width/2 - containerBounds.W()/2
-			containerY := currentY - containerHeight
+			containerY := currentY - containerDimension.Height
 
 			// Position the container
 			container = container.Translate(containerX, containerY)
@@ -221,8 +228,9 @@ func drawSora(
 			container = container.Translate(0, height)
 
 			builder.AddPath(container.ToSVG(), map[string]string{
-				"fill":         "none",
-				"stroke":       "pink",
+				"fill": "none",
+				// "stroke":       "pink",
+				"stroke":       "none",
 				"stroke-width": "0.025",
 				"id":           fmt.Sprintf("text-container-%d", i),
 			})
@@ -235,23 +243,27 @@ func drawSora(
 				log.Fatalf("Failed to convert text to path: %s", err)
 			}
 			textBounds := textPath.Bounds()
-			metrics := face.Metrics()
-			ascent := metrics.Ascent
-			descent := metrics.Descent
 
 			// Scale the text to fit within the container
 			scale := min(containerBounds.W()/textBounds.W(), containerBounds.H()/textBounds.H())
-			textPath.Scale(scale, scale)
+			textPath = textPath.Scale(scale, scale)
 
-			// Recalculate text position after scaling
+			// Recalculate text bounds after scaling to get actual rendered dimensions
 			textBounds = textPath.Bounds()
-			x := containerX +
-				containerBounds.W()/2 -
-				textBounds.W()/2
-			y := containerY +
-				containerBounds.H()/2 +
-				descent*scale -
-				((ascent + descent) / 2 * scale)
+
+			// Calculate the center of the container
+			centerX := containerX + containerBounds.W()/2
+			centerY := containerY + containerBounds.H()/2
+
+			// Calculate the center of the text's actual bounding box
+			// This uses the real rendered glyph bounds, not font metrics,
+			// which ensures proper centering regardless of font design choices
+			textCenterX := textBounds.X0 + textBounds.W()/2
+			textCenterY := textBounds.Y0 + textBounds.H()/2
+
+			// Translate so text center aligns with container center
+			x := centerX - textCenterX
+			y := centerY - textCenterY
 			textPath = textPath.Translate(x, y)
 			textPath = textPath.Scale(1, -1)
 			textPath = textPath.Translate(0, height)
@@ -262,7 +274,7 @@ func drawSora(
 			})
 
 			// Update currentY for the next line
-			currentY -= containerHeight + lineSpacing
+			currentY -= containerDimension.Height + lineSpacing
 		}
 	}
 
