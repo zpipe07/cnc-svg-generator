@@ -12,6 +12,7 @@ func drawMediumSora(
 	builder *svgutils.SVGBuilder,
 	foregroundColor string,
 	backgroundColor string,
+	strokeOnly bool,
 ) {
 	// Add the outer edge
 	outerEdge, err := canvas.ParseSVGPath("M 0 8.75 A 0.25 0.25 0 0 0 0.25 9 L 14.75 9 A 0.25 0.25 0 0 0 15 8.75 L 15 2.25 C 15 1.653 14.21 1.081 12.803 0.659 A 13.532 13.532 0 0 0 11.192 0.292 C 10.076 0.102 8.805 0 7.5 0 C 5.511 0 3.603 0.237 2.197 0.659 A 8.02 8.02 0 0 0 1.391 0.945 C 0.587 1.283 0.109 1.683 0.017 2.101 A 0.689 0.689 0 0 0 0 2.25 L 0 8.75 Z")
@@ -20,8 +21,10 @@ func drawMediumSora(
 	}
 	builder.StartGroup("Outer Edge", map[string]string{})
 	builder.AddPath(outerEdge.ToSVG(), map[string]string{
-		"fill": backgroundColor,
-		"id":   "outer-edge",
+		"fill":         map[bool]string{true: "none", false: backgroundColor}[strokeOnly],
+		"id":           "outer-edge",
+		"stroke":       map[bool]string{true: "black", false: "none"}[strokeOnly],
+		"stroke-width": "0.025",
 	})
 	builder.EndGroup()
 
@@ -32,8 +35,10 @@ func drawMediumSora(
 	}
 	builder.StartGroup("Round", map[string]string{})
 	builder.AddPath(roundedEdge.ToSVG(), map[string]string{
-		"fill": foregroundColor,
-		"id":   "rounded-edge",
+		"fill":         map[bool]string{true: "none", false: foregroundColor}[strokeOnly],
+		"id":           "rounded-edge",
+		"stroke":       map[bool]string{true: "black", false: "none"}[strokeOnly],
+		"stroke-width": "0.025",
 	})
 	builder.EndGroup()
 
@@ -44,16 +49,20 @@ func drawMediumSora(
 	}
 	builder.StartGroup("Vcarve", map[string]string{})
 	builder.AddPath(borderOuter.ToSVG(), map[string]string{
-		"fill": backgroundColor,
-		"id":   "my-custom-id",
+		"fill":         map[bool]string{true: "none", false: backgroundColor}[strokeOnly],
+		"id":           "my-custom-id",
+		"stroke":       map[bool]string{true: "black", false: "none"}[strokeOnly],
+		"stroke-width": "0.025",
 	})
 	borderInner, err := canvas.ParseSVGPath("M 0.7 8.3 L 14.3 8.3 L 14.3 2.269 A 0.16 0.16 0 0 0 14.258 2.174 A 0.7 0.7 0 0 1 14.243 2.158 A 1.359 1.359 0 0 0 13.957 1.913 A 0.2 0.2 0 0 1 13.955 1.912 A 0.2 0.2 0 0 1 13.953 1.91 A 3.515 3.515 0 0 0 13.441 1.635 A 0.2 0.2 0 0 1 13.44 1.634 A 0.2 0.2 0 0 1 13.439 1.634 A 6.75 6.75 0 0 0 12.723 1.367 A 0.2 0.2 0 0 1 12.722 1.366 A 0.2 0.2 0 0 1 12.72 1.366 A 9.067 9.067 0 0 0 12.605 1.33 A 12.832 12.832 0 0 0 11.079 0.982 A 20.437 20.437 0 0 0 8.706 0.73 A 0.2 0.2 0 0 1 8.705 0.73 A 24.023 24.023 0 0 0 7.5 0.7 A 22.79 22.79 0 0 0 4.714 0.866 A 15.759 15.759 0 0 0 2.912 1.19 A 10.623 10.623 0 0 0 2.397 1.33 A 0.2 0.2 0 0 1 2.396 1.33 A 0.2 0.2 0 0 1 2.395 1.33 A 7.32 7.32 0 0 0 1.659 1.591 A 3.98 3.98 0 0 0 1.123 1.861 A 0.2 0.2 0 0 1 1.121 1.863 A 0.2 0.2 0 0 1 1.119 1.864 A 1.665 1.665 0 0 0 0.791 2.119 A 0.5 0.5 0 0 1 0.786 2.124 A 0.5 0.5 0 0 1 0.78 2.13 A 0.315 0.315 0 0 0 0.7 2.257 L 0.7 8.3 Z")
 	if err != nil {
 		log.Fatalf("Failed to parse SVG path: %v", err)
 	}
 	builder.AddPath(borderInner.ToSVG(), map[string]string{
-		"fill": foregroundColor,
-		"id":   "my-custom-id",
+		"fill":         map[bool]string{true: "none", false: foregroundColor}[strokeOnly],
+		"id":           "my-custom-id",
+		"stroke":       map[bool]string{true: "black", false: "none"}[strokeOnly],
+		"stroke-width": "0.025",
 	})
 }
 
@@ -61,6 +70,7 @@ func drawLargeSora(
 	builder *svgutils.SVGBuilder,
 	foregroundColor string,
 	backgroundColor string,
+	strokeOnly bool,
 ) {
 	// Add the outer edge
 	outerEdge, err := canvas.ParseSVGPath("M 0 10.75 A 0.25 0.25 0 0 0 0.25 11 L 14.75 11 A 0.25 0.25 0 0 0 15 10.75 L 15 2.75 A 1.224 1.224 0 0 0 14.715 1.999 C 14.462 1.672 14.046 1.365 13.484 1.092 A 7.384 7.384 0 0 0 12.803 0.806 A 11.704 11.704 0 0 0 11.052 0.328 C 10.24 0.168 9.352 0.064 8.431 0.021 A 20.337 20.337 0 0 0 7.5 0 C 5.511 0 3.603 0.29 2.197 0.806 A 6.973 6.973 0 0 0 1.325 1.189 C 0.776 1.481 0.387 1.809 0.178 2.154 A 1.143 1.143 0 0 0 0 2.75 L 0 10.75 Z")
@@ -69,8 +79,10 @@ func drawLargeSora(
 	}
 	builder.StartGroup("Outer Edge", map[string]string{})
 	builder.AddPath(outerEdge.ToSVG(), map[string]string{
-		"fill": backgroundColor,
-		"id":   "outer-edge",
+		"fill":         map[bool]string{true: "none", false: backgroundColor}[strokeOnly],
+		"id":           "outer-edge",
+		"stroke":       map[bool]string{true: "black", false: "none"}[strokeOnly],
+		"stroke-width": "0.025",
 	})
 	builder.EndGroup()
 
@@ -81,8 +93,10 @@ func drawLargeSora(
 	}
 	builder.StartGroup("Rounded Edge", map[string]string{})
 	builder.AddPath(roundedEdge.ToSVG(), map[string]string{
-		"fill": foregroundColor,
-		"id":   "rounded-edge",
+		"fill":         map[bool]string{true: "none", false: foregroundColor}[strokeOnly],
+		"id":           "rounded-edge",
+		"stroke":       map[bool]string{true: "black", false: "none"}[strokeOnly],
+		"stroke-width": "0.025",
 	})
 	builder.EndGroup()
 
@@ -93,16 +107,20 @@ func drawLargeSora(
 	}
 	builder.StartGroup("Vcarve", map[string]string{})
 	builder.AddPath(borderOuter.ToSVG(), map[string]string{
-		"fill": backgroundColor,
-		"id":   "my-custom-id",
+		"fill":         map[bool]string{true: "none", false: backgroundColor}[strokeOnly],
+		"id":           "my-custom-id",
+		"stroke":       map[bool]string{true: "black", false: "none"}[strokeOnly],
+		"stroke-width": "0.025",
 	})
 	borderInner, err := canvas.ParseSVGPath("M 0.7 10.3 L 14.3 10.3 L 14.3 2.762 A 0.524 0.524 0 0 0 14.178 2.448 A 0.5 0.5 0 0 1 14.173 2.442 A 0.5 0.5 0 0 1 14.169 2.437 A 1.853 1.853 0 0 0 13.784 2.077 A 0.2 0.2 0 0 1 13.782 2.076 A 0.2 0.2 0 0 1 13.78 2.074 A 4.036 4.036 0 0 0 13.183 1.724 A 0.2 0.2 0 0 1 13.182 1.724 A 0.2 0.2 0 0 1 13.181 1.723 A 6.684 6.684 0 0 0 12.566 1.464 A 11.004 11.004 0 0 0 10.921 1.016 A 17.21 17.21 0 0 0 8.401 0.721 A 0.2 0.2 0 0 1 8.4 0.721 A 0.2 0.2 0 0 1 8.399 0.721 A 19.637 19.637 0 0 0 7.5 0.7 A 18.443 18.443 0 0 0 4.581 0.926 A 12.548 12.548 0 0 0 2.791 1.342 A 8.749 8.749 0 0 0 2.437 1.463 A 0.2 0.2 0 0 1 2.436 1.463 A 0.2 0.2 0 0 1 2.434 1.464 A 6.273 6.273 0 0 0 1.65 1.809 A 0.2 0.2 0 0 1 1.649 1.81 A 0.2 0.2 0 0 1 1.648 1.81 A 3.382 3.382 0 0 0 1.091 2.174 A 0.2 0.2 0 0 1 1.088 2.176 A 0.2 0.2 0 0 1 1.086 2.178 A 1.409 1.409 0 0 0 0.769 2.529 A 0.443 0.443 0 0 0 0.7 2.757 L 0.7 10.3 Z")
 	if err != nil {
 		log.Fatalf("Failed to parse SVG path: %v", err)
 	}
 	builder.AddPath(borderInner.ToSVG(), map[string]string{
-		"fill": foregroundColor,
-		"id":   "my-custom-id",
+		"fill":         map[bool]string{true: "none", false: foregroundColor}[strokeOnly],
+		"id":           "my-custom-id",
+		"stroke":       map[bool]string{true: "black", false: "none"}[strokeOnly],
+		"stroke-width": "0.025",
 	})
 }
 
@@ -110,6 +128,7 @@ func drawSmallSora(
 	builder *svgutils.SVGBuilder,
 	foregroundColor string,
 	backgroundColor string,
+	strokeOnly bool,
 ) {
 	// Add the outer edge
 	outerEdge, err := canvas.ParseSVGPath("M 0 7.25 A 0.25 0.25 0 0 0 0.25 7.5 L 14.75 7.5 A 0.25 0.25 0 0 0 15 7.25 L 15 1.875 A 0.628 0.628 0 0 0 14.806 1.451 C 14.492 1.112 13.803 0.799 12.803 0.549 A 15.865 15.865 0 0 0 11.192 0.243 C 10.076 0.085 8.805 0 7.5 0 C 5.763 0 4.089 0.151 2.756 0.423 A 13.185 13.185 0 0 0 2.197 0.549 A 9.22 9.22 0 0 0 1.417 0.778 C 0.502 1.095 0 1.479 0 1.875 L 0 7.25 Z")
@@ -118,8 +137,10 @@ func drawSmallSora(
 	}
 	builder.StartGroup("Outer Edge", map[string]string{})
 	builder.AddPath(outerEdge.ToSVG(), map[string]string{
-		"fill": backgroundColor,
-		"id":   "outer-edge",
+		"fill":         map[bool]string{true: "none", false: backgroundColor}[strokeOnly],
+		"id":           "outer-edge",
+		"stroke":       map[bool]string{true: "black", false: "none"}[strokeOnly],
+		"stroke-width": "0.025",
 	})
 	builder.EndGroup()
 
@@ -130,8 +151,10 @@ func drawSmallSora(
 	}
 	builder.StartGroup("Rounded Edge", map[string]string{})
 	builder.AddPath(roundedEdge.ToSVG(), map[string]string{
-		"fill": foregroundColor,
-		"id":   "rounded-edge",
+		"fill":         map[bool]string{true: "none", false: foregroundColor}[strokeOnly],
+		"id":           "rounded-edge",
+		"stroke":       map[bool]string{true: "black", false: "none"}[strokeOnly],
+		"stroke-width": "0.025",
 	})
 	builder.EndGroup()
 
@@ -142,16 +165,20 @@ func drawSmallSora(
 	}
 	builder.StartGroup("Vcarve", map[string]string{})
 	builder.AddPath(borderOuter.ToSVG(), map[string]string{
-		"fill": backgroundColor,
-		"id":   "my-custom-id",
+		"fill":         map[bool]string{true: "none", false: backgroundColor}[strokeOnly],
+		"id":           "my-custom-id",
+		"stroke":       map[bool]string{true: "black", false: "none"}[strokeOnly],
+		"stroke-width": "0.025",
 	})
 	borderInner, err := canvas.ParseSVGPath("M 0.7 6.8 L 14.3 6.8 L 14.3 1.935 A 1.038 1.038 0 0 0 14.079 1.763 A 0.2 0.2 0 0 1 14.076 1.762 A 0.2 0.2 0 0 1 14.073 1.76 A 3.181 3.181 0 0 0 13.63 1.543 A 0.2 0.2 0 0 1 13.629 1.543 A 0.2 0.2 0 0 1 13.627 1.542 A 6.384 6.384 0 0 0 13.052 1.343 A 0.2 0.2 0 0 1 13.051 1.342 A 0.2 0.2 0 0 1 13.05 1.342 A 9.585 9.585 0 0 0 12.636 1.229 A 15.165 15.165 0 0 0 11.097 0.937 A 24.202 24.202 0 0 0 8.915 0.734 A 28.831 28.831 0 0 0 7.5 0.7 A 27.434 27.434 0 0 0 4.7 0.839 A 18.788 18.788 0 0 0 2.894 1.109 A 12.485 12.485 0 0 0 2.366 1.228 A 8.52 8.52 0 0 0 1.644 1.44 A 4.611 4.611 0 0 0 1.115 1.657 A 0.2 0.2 0 0 1 1.113 1.658 A 0.2 0.2 0 0 1 1.111 1.659 A 1.919 1.919 0 0 0 0.778 1.863 A 0.2 0.2 0 0 1 0.773 1.866 A 0.2 0.2 0 0 1 0.768 1.87 A 0.353 0.353 0 0 0 0.7 1.936 L 0.7 6.8 Z")
 	if err != nil {
 		log.Fatalf("Failed to parse SVG path: %v", err)
 	}
 	builder.AddPath(borderInner.ToSVG(), map[string]string{
-		"fill": foregroundColor,
-		"id":   "my-custom-id",
+		"fill":         map[bool]string{true: "none", false: foregroundColor}[strokeOnly],
+		"id":           "my-custom-id",
+		"stroke":       map[bool]string{true: "black", false: "none"}[strokeOnly],
+		"stroke-width": "0.025",
 	})
 }
 
@@ -163,16 +190,25 @@ func drawSora(
 	backgroundColor string,
 	lines []string,
 	fontFamily *canvas.FontFamily,
+	strokeOnly bool,
 ) string {
+	if strokeOnly {
+		foregroundColor = "transparent"
+		backgroundColor = "transparent"
+	} else {
+		foregroundColor = GetColor(foregroundColor)
+		backgroundColor = GetColor(backgroundColor)
+	}
+
 	// Initialize SVG builder
 	builder := svgutils.NewSVGBuilder(width, height)
 
 	if size == "medium" {
-		drawMediumSora(builder, foregroundColor, backgroundColor)
+		drawMediumSora(builder, foregroundColor, backgroundColor, strokeOnly)
 	} else if size == "large" {
-		drawLargeSora(builder, foregroundColor, backgroundColor)
+		drawLargeSora(builder, foregroundColor, backgroundColor, strokeOnly)
 	} else if size == "small" {
-		drawSmallSora(builder, foregroundColor, backgroundColor)
+		drawSmallSora(builder, foregroundColor, backgroundColor, strokeOnly)
 	} else {
 		log.Fatalf("Invalid size: %s", size)
 	}
@@ -228,11 +264,9 @@ func drawSora(
 			container = container.Translate(0, height)
 
 			builder.AddPath(container.ToSVG(), map[string]string{
-				"fill": "none",
-				// "stroke":       "pink",
-				"stroke":       "none",
-				"stroke-width": "0.025",
-				"id":           fmt.Sprintf("text-container-%d", i),
+				"fill":   "none",
+				"stroke": "none",
+				"id":     fmt.Sprintf("text-container-%d", i),
 			})
 
 			// Draw text
@@ -269,8 +303,10 @@ func drawSora(
 			textPath = textPath.Translate(0, height)
 
 			builder.AddPath(textPath.ToSVG(), map[string]string{
-				"fill": backgroundColor,
-				"id":   fmt.Sprintf("text-line-%d", i),
+				"fill":         map[bool]string{true: "none", false: backgroundColor}[strokeOnly],
+				"id":           fmt.Sprintf("text-line-%d", i),
+				"stroke":       map[bool]string{true: "black", false: "none"}[strokeOnly],
+				"stroke-width": "0.025",
 			})
 
 			// Update currentY for the next line
