@@ -59,7 +59,7 @@ func DrawSign(
 	case os.Getenv("SESAME_PRODUCT_ID"):
 		return drawSesame(size, width, height, foregroundColor, backgroundColor, lines, fontFamily)
 	case os.Getenv("SORA_PRODUCT_ID"):
-		return drawSora(size, width, height, foregroundColor, backgroundColor, lines, fontFamily)
+		return drawSora(size, width, height, foregroundColor, backgroundColor, lines, fontFamily, strokeOnly)
 	case os.Getenv("DONNELLY_PRODUCT_ID"):
 		return drawDonnelly(ctx, size, width, height, foregroundColor, backgroundColor, lines, fontFamily)
 	case os.Getenv("RIBBON_PRODUCT_ID"):
