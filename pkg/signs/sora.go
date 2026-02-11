@@ -64,21 +64,25 @@ func drawCurvedText(
 	}
 	totalWidth := advances[len(runes)]
 
-	// Scale to fit container
+	// Scale to fill container; also limit by arc spacing to avoid overlap with many chars
 	fullPath, _, err := face.ToPath(line)
 	if err != nil {
 		log.Fatalf("Failed to convert text to path: %s", err)
 	}
 	fullBounds := fullPath.Bounds()
-	scale := min(containerBounds.W()/fullBounds.W(), containerBounds.H()/fullBounds.H())
+	scaleW := containerBounds.W() / fullBounds.W()
+	scaleH := containerBounds.H() / fullBounds.H()
 
-	// Curve params: arc with minimum curve so it's always visible regardless of character count
-	const spacingFactor = 1.25
-	effectiveTotalWidth := totalWidth * spacingFactor
-	containerCenterY := containerY + containerBounds.H()/2
-	curveResult := getCurveParamsForTopLine(width, containerCenterY, containerBounds.W(), effectiveTotalWidth)
+	const curvedTextVerticalOffset = -0.4 // lower text to avoid overlapping top edge
+	containerCenterY := containerY + containerBounds.H()/2 + curvedTextVerticalOffset
+	curveResult := getCurveParamsForTopLine(width, containerCenterY, containerBounds.W())
 	curveParams := curveResult.Params
 	arcLen := curveResult.ArcLen
+
+	// Scale: fit container, but also ensure scaled text fits along arc (avoid overlap)
+	const arcSpacingMargin = 0.95 // use 95% of arc for text
+	maxScaleForArc := arcLen / (fullBounds.W() * arcSpacingMargin)
+	scale := min(min(scaleW, scaleH), maxScaleForArc)
 
 	for j, r := range runes {
 		glyphStr := string(r)
@@ -92,16 +96,14 @@ func drawCurvedText(
 		glyphPath = glyphPath.Scale(scale, scale)
 		glyphBounds = glyphPath.Bounds()
 
-		// Map advance to arc position; text centered on arc
+		// Map advance to arc position; use scaled text width for natural spacing
+		// (avoids extra whitespace when few chars would otherwise stretch across full arc)
 		charAdvanceStart := advances[j]
 		charAdvanceEnd := advances[j+1]
 		charAdvanceMid := (charAdvanceStart + charAdvanceEnd) / 2
 
-		// s = advance mapped to arc length (centered)
-		s := arcLen / 2
-		if totalWidth > 0 {
-			s = arcLen/2 + (charAdvanceMid-totalWidth/2)/totalWidth*arcLen
-		}
+		// s = arc center + (advance offset) * scale for natural letter-spacing
+		s := arcLen/2 + (charAdvanceMid-totalWidth/2)*scale
 
 		x, y, angleRad := posAtArcLength(curveParams, s)
 
@@ -131,65 +133,29 @@ func drawCurvedText(
 
 // curveParamsResult holds arc parameters and the actual arc length for positioning.
 type curveParamsResult struct {
-	Params  arcCurveParams
-	ArcLen  float64 // actual arc length for character placement
+	Params arcCurveParams
+	ArcLen float64 // actual arc length for character placement
 }
 
 // getCurveParamsForTopLine returns arc parameters for the top line curved text.
-// Uses a minimum angle span so the curve is always visible (not flat for short text).
-func getCurveParamsForTopLine(width float64, containerCenterY float64, arcWidth float64, totalWidth float64) curveParamsResult {
+// Uses a fixed angle span so curvature is constant regardless of character count.
+func getCurveParamsForTopLine(width float64, containerCenterY float64, arcWidth float64) curveParamsResult {
 	centerX := width / 2
 
-	// Minimum angle span (15°) so short text still curves visibly
-	const minAngleSpan = math.Pi / 12
+	// Fixed angle span (20°) - curvature stays the same for any number of characters
+	const angleSpan = math.Pi / 9
 
-	// Target: chord = arcWidth, arcLen = totalWidth
-	// chord = 2*r*sin(θ/2), arcLen = r*θ => k = chord/arcLen = 2*sin(θ/2)/θ
-	k := arcWidth / totalWidth
-	if k < 0.001 {
-		k = 0.001
-	}
-	if k > 1 {
-		k = 1
-	}
-
-	// Solve for θ
-	angleSpan := math.Pi / 6
-	for iter := 0; iter < 20; iter++ {
-		half := angleSpan / 2
-		f := 2*math.Sin(half)/angleSpan - k
-		if math.Abs(f) < 1e-10 {
-			break
-		}
-		fp := (angleSpan*math.Cos(half) - 2*math.Sin(half)) / (angleSpan * angleSpan)
-		angleSpan -= f / fp
-		if angleSpan < minAngleSpan {
-			angleSpan = minAngleSpan
-			break
-		}
-		if angleSpan > math.Pi {
-			angleSpan = math.Pi
-			break
-		}
-	}
-
-	// Enforce minimum so curve is always visible
-	if angleSpan < minAngleSpan {
-		angleSpan = minAngleSpan
-	}
-
-	// Arc centered at 12 o'clock
-	midTheta := math.Pi / 2
-	thetaStart := midTheta + angleSpan/2
-	thetaEnd := midTheta - angleSpan/2
-
-	// Radius from chord: chord = 2*r*sin(θ/2) => r = chord/(2*sin(θ/2))
+	// Arc centered at 12 o'clock: chord = arcWidth
+	// radius from chord: chord = 2*r*sin(θ/2) => r = chord/(2*sin(θ/2))
 	radius := arcWidth / (2 * math.Sin(angleSpan/2))
 	if radius < 1 {
 		radius = 1
 	}
-
 	arcLen := radius * angleSpan
+
+	midTheta := math.Pi / 2
+	thetaStart := midTheta + angleSpan/2
+	thetaEnd := midTheta - angleSpan/2
 
 	centerY := containerCenterY - radius
 
@@ -415,8 +381,8 @@ func drawSora(
 
 	if numLines > 0 {
 		// Calculate the total height for the text containers
-		const topPadding = 1.5
-		const bottomPadding = 1.0
+		const topPadding = 1.75
+		const bottomPadding = 1.25
 		lineSpacing := 0.5
 		availableHeight := height - (topPadding + bottomPadding) - float64(numLines-1)*lineSpacing
 
@@ -429,7 +395,7 @@ func drawSora(
 		switch numLines {
 		case 3:
 			containerDimensions = []ContainerDimensions{
-				{Height: availableHeight * 0.2, Width: width - 5.25},
+				{Height: availableHeight * 0.2, Width: width - 3.5},
 				{Height: availableHeight * 0.5, Width: width - 2.25},
 				{Height: availableHeight * 0.3, Width: width - 2.25},
 			}
@@ -463,13 +429,16 @@ func drawSora(
 			builder.AddPath(container.ToSVG(), map[string]string{
 				"fill":   "none",
 				"stroke": "none",
-				"id":     fmt.Sprintf("text-container-%d", i),
+				// "stroke":       "pink",
+				// "stroke-width": "0.025",
+				"id": fmt.Sprintf("text-container-%d", i),
 			})
 
 			fontSize := 1.0
 			face := fontFamily.Face(fontSize, canvas.FontRegular, canvas.FontNormal)
 
-			if i == 0 && len(line) > 0 && size == "large" {
+			const textLengthCurveThreshold = 6
+			if i == 0 && len(line) > 0 && size == "large" && len([]rune(line)) > textLengthCurveThreshold {
 				// Draw top line on curve (large size only)
 				drawCurvedText(builder, face, line, width, height, containerX, containerY, containerBounds, strokeOnly, backgroundColor)
 			} else {
