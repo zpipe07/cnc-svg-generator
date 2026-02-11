@@ -395,18 +395,18 @@ func drawSora(
 		switch numLines {
 		case 3:
 			containerDimensions = []ContainerDimensions{
-				{Height: availableHeight * 0.2, Width: width - 3.5},
-				{Height: availableHeight * 0.5, Width: width - 2.25},
-				{Height: availableHeight * 0.3, Width: width - 2.25},
+				{Height: availableHeight * 0.2, Width: width - 4.0},
+				{Height: availableHeight * 0.5, Width: width - 2.75},
+				{Height: availableHeight * 0.3, Width: width - 2.75},
 			}
 		case 2:
 			containerDimensions = []ContainerDimensions{
-				{Height: availableHeight * 0.7, Width: width - 4.5},
-				{Height: availableHeight * 0.3, Width: width - 2.25},
+				{Height: availableHeight * 0.7, Width: width - 5.0},
+				{Height: availableHeight * 0.3, Width: width - 2.75},
 			}
 		default:
 			containerDimensions = []ContainerDimensions{
-				{Height: availableHeight, Width: width - 3.0},
+				{Height: availableHeight, Width: width - 3.5},
 			}
 		}
 
