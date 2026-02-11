@@ -4,9 +4,206 @@ import (
 	"cnc-svg-generator/pkg/svgutils"
 	"fmt"
 	"log"
+	"math"
 
 	"github.com/tdewolff/canvas"
 )
+
+// arcCurveParams holds parameters for a circular arc used for curved text.
+type arcCurveParams struct {
+	CenterX    float64
+	CenterY    float64
+	Radius     float64
+	ThetaStart float64 // radians, left side of arc
+	ThetaEnd   float64 // radians, right side of arc
+}
+
+// posAtArcLength returns the position (x, y) and tangent angle (in radians) at arc length s
+// along the circular arc. Angle is suitable for rotating text to follow the curve.
+func posAtArcLength(p arcCurveParams, s float64) (x, y, angle float64) {
+	arcLen := p.Radius * math.Abs(p.ThetaEnd-p.ThetaStart)
+	if arcLen == 0 {
+		return p.CenterX + p.Radius*math.Cos(p.ThetaStart), p.CenterY + p.Radius*math.Sin(p.ThetaStart), 0
+	}
+	t := s / arcLen
+	if t > 1 {
+		t = 1
+	}
+	if t < 0 {
+		t = 0
+	}
+	theta := p.ThetaStart + t*(p.ThetaEnd-p.ThetaStart)
+	x = p.CenterX + p.Radius*math.Cos(theta)
+	y = p.CenterY + p.Radius*math.Sin(theta)
+	// Tangent for circle: perpendicular to radius. For theta increasing left-to-right,
+	// tangent = theta - pi/2 (so text baseline follows the curve).
+	angle = theta - math.Pi/2
+	return x, y, angle
+}
+
+// drawCurvedText renders the top line character-by-character along a circular arc.
+func drawCurvedText(
+	builder *svgutils.SVGBuilder,
+	face *canvas.FontFace,
+	line string,
+	width, height float64,
+	containerX, containerY float64,
+	containerBounds canvas.Rect,
+	strokeOnly bool,
+	backgroundColor string,
+) {
+	runes := []rune(line)
+	if len(runes) == 0 {
+		return
+	}
+
+	// Build cumulative advance widths for natural spacing
+	advances := make([]float64, len(runes)+1)
+	for j := 0; j < len(runes); j++ {
+		advances[j+1] = advances[j] + face.TextWidth(string(runes[j]))
+	}
+	totalWidth := advances[len(runes)]
+
+	// Scale to fit container
+	fullPath, _, err := face.ToPath(line)
+	if err != nil {
+		log.Fatalf("Failed to convert text to path: %s", err)
+	}
+	fullBounds := fullPath.Bounds()
+	scale := min(containerBounds.W()/fullBounds.W(), containerBounds.H()/fullBounds.H())
+
+	// Curve params: arc with minimum curve so it's always visible regardless of character count
+	const spacingFactor = 1.25
+	effectiveTotalWidth := totalWidth * spacingFactor
+	containerCenterY := containerY + containerBounds.H()/2
+	curveResult := getCurveParamsForTopLine(width, containerCenterY, containerBounds.W(), effectiveTotalWidth)
+	curveParams := curveResult.Params
+	arcLen := curveResult.ArcLen
+
+	for j, r := range runes {
+		glyphStr := string(r)
+		glyphPath, _, err := face.ToPath(glyphStr)
+		if err != nil {
+			log.Fatalf("Failed to convert glyph to path: %s", err)
+		}
+		glyphBounds := glyphPath.Bounds()
+
+		// Scale glyph
+		glyphPath = glyphPath.Scale(scale, scale)
+		glyphBounds = glyphPath.Bounds()
+
+		// Map advance to arc position; text centered on arc
+		charAdvanceStart := advances[j]
+		charAdvanceEnd := advances[j+1]
+		charAdvanceMid := (charAdvanceStart + charAdvanceEnd) / 2
+
+		// s = advance mapped to arc length (centered)
+		s := arcLen / 2
+		if totalWidth > 0 {
+			s = arcLen/2 + (charAdvanceMid-totalWidth/2)/totalWidth*arcLen
+		}
+
+		x, y, angleRad := posAtArcLength(curveParams, s)
+
+		// Use baseline as anchor (not center) so characters sit on the curve
+		// In font coords the baseline is at y=0; horizontally center the glyph
+		glyphCenterX := glyphBounds.X0 + glyphBounds.W()/2
+		baselineY := 0.0 // font baseline is at y=0
+
+		// Transform: move baseline point to origin, rotate around it, place at (x,y)
+		glyphPath = glyphPath.Translate(-glyphCenterX, -baselineY)
+		angleDeg := angleRad * 180 / math.Pi
+		glyphPath = glyphPath.Transform(canvas.Identity.Rotate(angleDeg))
+		glyphPath = glyphPath.Translate(x, y)
+
+		// Apply Y-flip to match SVG coordinate system
+		glyphPath = glyphPath.Scale(1, -1)
+		glyphPath = glyphPath.Translate(0, height)
+
+		builder.AddPath(glyphPath.ToSVG(), map[string]string{
+			"fill":         map[bool]string{true: "none", false: backgroundColor}[strokeOnly],
+			"id":           fmt.Sprintf("text-line-0-char-%d", j),
+			"stroke":       map[bool]string{true: "black", false: "none"}[strokeOnly],
+			"stroke-width": "0.025",
+		})
+	}
+}
+
+// curveParamsResult holds arc parameters and the actual arc length for positioning.
+type curveParamsResult struct {
+	Params  arcCurveParams
+	ArcLen  float64 // actual arc length for character placement
+}
+
+// getCurveParamsForTopLine returns arc parameters for the top line curved text.
+// Uses a minimum angle span so the curve is always visible (not flat for short text).
+func getCurveParamsForTopLine(width float64, containerCenterY float64, arcWidth float64, totalWidth float64) curveParamsResult {
+	centerX := width / 2
+
+	// Minimum angle span (15°) so short text still curves visibly
+	const minAngleSpan = math.Pi / 12
+
+	// Target: chord = arcWidth, arcLen = totalWidth
+	// chord = 2*r*sin(θ/2), arcLen = r*θ => k = chord/arcLen = 2*sin(θ/2)/θ
+	k := arcWidth / totalWidth
+	if k < 0.001 {
+		k = 0.001
+	}
+	if k > 1 {
+		k = 1
+	}
+
+	// Solve for θ
+	angleSpan := math.Pi / 6
+	for iter := 0; iter < 20; iter++ {
+		half := angleSpan / 2
+		f := 2*math.Sin(half)/angleSpan - k
+		if math.Abs(f) < 1e-10 {
+			break
+		}
+		fp := (angleSpan*math.Cos(half) - 2*math.Sin(half)) / (angleSpan * angleSpan)
+		angleSpan -= f / fp
+		if angleSpan < minAngleSpan {
+			angleSpan = minAngleSpan
+			break
+		}
+		if angleSpan > math.Pi {
+			angleSpan = math.Pi
+			break
+		}
+	}
+
+	// Enforce minimum so curve is always visible
+	if angleSpan < minAngleSpan {
+		angleSpan = minAngleSpan
+	}
+
+	// Arc centered at 12 o'clock
+	midTheta := math.Pi / 2
+	thetaStart := midTheta + angleSpan/2
+	thetaEnd := midTheta - angleSpan/2
+
+	// Radius from chord: chord = 2*r*sin(θ/2) => r = chord/(2*sin(θ/2))
+	radius := arcWidth / (2 * math.Sin(angleSpan/2))
+	if radius < 1 {
+		radius = 1
+	}
+
+	arcLen := radius * angleSpan
+
+	centerY := containerCenterY - radius
+
+	return curveParamsResult{
+		Params: arcCurveParams{
+			CenterX:    centerX,
+			CenterY:    centerY,
+			Radius:     radius,
+			ThetaStart: thetaStart,
+			ThetaEnd:   thetaEnd,
+		},
+		ArcLen: arcLen,
+	}
+}
 
 func drawMediumSora(
 	builder *svgutils.SVGBuilder,
@@ -269,45 +466,42 @@ func drawSora(
 				"id":     fmt.Sprintf("text-container-%d", i),
 			})
 
-			// Draw text
 			fontSize := 1.0
 			face := fontFamily.Face(fontSize, canvas.FontRegular, canvas.FontNormal)
-			textPath, _, err := face.ToPath(line)
-			if err != nil {
-				log.Fatalf("Failed to convert text to path: %s", err)
+
+			if i == 0 && len(line) > 0 && size == "large" {
+				// Draw top line on curve (large size only)
+				drawCurvedText(builder, face, line, width, height, containerX, containerY, containerBounds, strokeOnly, backgroundColor)
+			} else {
+				// Draw subsequent lines straight
+				textPath, _, err := face.ToPath(line)
+				if err != nil {
+					log.Fatalf("Failed to convert text to path: %s", err)
+				}
+				textBounds := textPath.Bounds()
+
+				scale := min(containerBounds.W()/textBounds.W(), containerBounds.H()/textBounds.H())
+				textPath = textPath.Scale(scale, scale)
+
+				textBounds = textPath.Bounds()
+				centerX := containerX + containerBounds.W()/2
+				centerY := containerY + containerBounds.H()/2
+				textCenterX := textBounds.X0 + textBounds.W()/2
+				textCenterY := textBounds.Y0 + textBounds.H()/2
+
+				x := centerX - textCenterX
+				y := centerY - textCenterY
+				textPath = textPath.Translate(x, y)
+				textPath = textPath.Scale(1, -1)
+				textPath = textPath.Translate(0, height)
+
+				builder.AddPath(textPath.ToSVG(), map[string]string{
+					"fill":         map[bool]string{true: "none", false: backgroundColor}[strokeOnly],
+					"id":           fmt.Sprintf("text-line-%d", i),
+					"stroke":       map[bool]string{true: "black", false: "none"}[strokeOnly],
+					"stroke-width": "0.025",
+				})
 			}
-			textBounds := textPath.Bounds()
-
-			// Scale the text to fit within the container
-			scale := min(containerBounds.W()/textBounds.W(), containerBounds.H()/textBounds.H())
-			textPath = textPath.Scale(scale, scale)
-
-			// Recalculate text bounds after scaling to get actual rendered dimensions
-			textBounds = textPath.Bounds()
-
-			// Calculate the center of the container
-			centerX := containerX + containerBounds.W()/2
-			centerY := containerY + containerBounds.H()/2
-
-			// Calculate the center of the text's actual bounding box
-			// This uses the real rendered glyph bounds, not font metrics,
-			// which ensures proper centering regardless of font design choices
-			textCenterX := textBounds.X0 + textBounds.W()/2
-			textCenterY := textBounds.Y0 + textBounds.H()/2
-
-			// Translate so text center aligns with container center
-			x := centerX - textCenterX
-			y := centerY - textCenterY
-			textPath = textPath.Translate(x, y)
-			textPath = textPath.Scale(1, -1)
-			textPath = textPath.Translate(0, height)
-
-			builder.AddPath(textPath.ToSVG(), map[string]string{
-				"fill":         map[bool]string{true: "none", false: backgroundColor}[strokeOnly],
-				"id":           fmt.Sprintf("text-line-%d", i),
-				"stroke":       map[bool]string{true: "black", false: "none"}[strokeOnly],
-				"stroke-width": "0.025",
-			})
 
 			// Update currentY for the next line
 			currentY -= containerDimension.Height + lineSpacing
