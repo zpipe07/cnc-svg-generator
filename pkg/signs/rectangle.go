@@ -154,15 +154,13 @@ func drawRectangle(
 			textPath = textPath.Translate(x, y)
 			textPath = textPath.Scale(1, -1)
 			textPath = textPath.Translate(0, height)
-			// VCarve can reject SVGs with quadratic curve commands; flatten to line segments.
-			textPath = textPath.Flatten(0.01)
 
-		builder.AddPath(textPath.ToSVG(), map[string]string{
-			"fill":         map[bool]string{true: "none", false: backgroundColor}[strokeOnly],
-			"id":           fmt.Sprintf("text-line-%d", i),
-			"stroke":       map[bool]string{true: "black", false: "none"}[strokeOnly],
-			"stroke-width": "0.025",
-		})
+			builder.AddPath(textPath.ToSVG(), map[string]string{
+				"fill":         map[bool]string{true: "none", false: backgroundColor}[strokeOnly],
+				"id":           fmt.Sprintf("text-line-%d", i),
+				"stroke":       map[bool]string{true: "black", false: "none"}[strokeOnly],
+				"stroke-width": "0.025",
+			})
 
 			// Update currentY for the next line
 			currentY -= containerHeight + lineSpacing
