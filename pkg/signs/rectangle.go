@@ -27,6 +27,7 @@ func drawRectangle(
 
 	// Add the outer edge
 	outerEdge := canvas.RoundedRectangle(width, height, 0.25)
+	outerEdge = outerEdge.ReplaceArcs()
 	builder.StartGroup("Outer Edge", map[string]string{})
 	builder.AddPath(outerEdge.ToSVG(), map[string]string{
 		"fill":         map[bool]string{true: "none", false: backgroundColor}[strokeOnly],
@@ -39,6 +40,7 @@ func drawRectangle(
 	// Add the rounded edge
 	roundedEdge := canvas.RoundedRectangle(width-0.5, height-0.5, 0.2)
 	roundedEdge = roundedEdge.Translate(0.25, 0.25)
+	roundedEdge = roundedEdge.ReplaceArcs()
 	builder.StartGroup("Rounded Edge", map[string]string{})
 	builder.AddPath(roundedEdge.ToSVG(), map[string]string{
 		"fill":         map[bool]string{true: "none", false: foregroundColor}[strokeOnly],
@@ -51,6 +53,7 @@ func drawRectangle(
 	// Add the border
 	borderOuter := canvas.RoundedRectangle(width-1.0, height-1.0, 0.15)
 	borderOuter = borderOuter.Translate(0.5, 0.5)
+	borderOuter = borderOuter.ReplaceArcs()
 	builder.StartGroup("Vcarve", map[string]string{})
 	builder.AddPath(borderOuter.ToSVG(), map[string]string{
 		"fill":         map[bool]string{true: "none", false: backgroundColor}[strokeOnly],
@@ -60,6 +63,7 @@ func drawRectangle(
 	})
 	borderInner := canvas.RoundedRectangle(width-1.25, height-1.25, 0.1)
 	borderInner = borderInner.Translate(0.625, 0.625)
+	borderInner = borderInner.ReplaceArcs()
 	builder.AddPath(borderInner.ToSVG(), map[string]string{
 		"fill":         map[bool]string{true: "none", false: foregroundColor}[strokeOnly],
 		"id":           "my-custom-id",
@@ -128,7 +132,7 @@ func drawRectangle(
 
 			// Scale the text to fit within the container
 			scale := min(containerBounds.W()/textBounds.W(), containerBounds.H()/textBounds.H())
-			textPath.Scale(scale, scale)
+			textPath = textPath.Scale(scale, scale)
 
 			// Recalculate text bounds after scaling to get actual rendered dimensions
 			textBounds = textPath.Bounds()
@@ -150,6 +154,8 @@ func drawRectangle(
 			textPath = textPath.Translate(x, y)
 			textPath = textPath.Scale(1, -1)
 			textPath = textPath.Translate(0, height)
+			// VCarve can reject SVGs with quadratic curve commands; flatten to line segments.
+			textPath = textPath.Flatten(0.01)
 
 		builder.AddPath(textPath.ToSVG(), map[string]string{
 			"fill":         map[bool]string{true: "none", false: backgroundColor}[strokeOnly],
