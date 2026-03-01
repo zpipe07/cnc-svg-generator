@@ -65,6 +65,12 @@ var PoorRichard []byte
 //go:embed Marigold.otf
 var Marigold []byte
 
+//go:embed OstrichSans-Heavy.otf
+var OstrichSans []byte
+
+//go:embed Fraunces-SemiBold.ttf
+var Fraunces []byte
+
 func ParseFontFamily(fontFamilyStr string) (*canvas.FontFamily, error) {
 	var fontFamily *canvas.FontFamily
 	switch fontFamilyStr {
@@ -173,6 +179,18 @@ func ParseFontFamily(fontFamilyStr string) (*canvas.FontFamily, error) {
 	case "marigold":
 		fontFamily = canvas.NewFontFamily("Marigold")
 		if err := fontFamily.LoadFont(Marigold, 0, canvas.FontRegular); err != nil {
+			log.Println("Failed to load AdventPro font: ", err)
+			panic("Font loading error")
+		}
+	case "ostrichsans":
+		fontFamily = canvas.NewFontFamily("OstrichSans")
+		if err := fontFamily.LoadFont(OstrichSans, 0, canvas.FontRegular); err != nil {
+			log.Println("Failed to load AdventPro font: ", err)
+			panic("Font loading error")
+		}
+	case "fraunces":
+		fontFamily = canvas.NewFontFamily("Fraunces")
+		if err := fontFamily.LoadFont(Fraunces, 0, canvas.FontRegular); err != nil {
 			log.Println("Failed to load AdventPro font: ", err)
 			panic("Font loading error")
 		}
