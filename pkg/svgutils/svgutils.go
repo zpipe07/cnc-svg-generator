@@ -23,6 +23,18 @@ func NewSVGBuilder(width, height float64) *SVGBuilder {
 	return builder
 }
 
+// AddDefs writes a <defs> block to the SVG. Call early, before groups, to define filters and gradients.
+func (s *SVGBuilder) AddDefs(content string) {
+	s.buffer.WriteString("<defs>")
+	s.buffer.WriteString(content)
+	s.buffer.WriteString("</defs>")
+}
+
+// AddRawContent writes arbitrary SVG markup to the buffer.
+func (s *SVGBuilder) AddRawContent(content string) {
+	s.buffer.WriteString(content)
+}
+
 // StartGroup starts a new SVG group with optional attributes.
 func (s *SVGBuilder) StartGroup(name string, attributes map[string]string) {
 	log.Printf("Starting group: %s", name)
