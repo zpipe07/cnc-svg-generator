@@ -71,6 +71,9 @@ var OstrichSans []byte
 //go:embed Fraunces-SemiBold.ttf
 var Fraunces []byte
 
+//go:embed Pilowlava-Regular.otf
+var Pilowlava []byte
+
 func ParseFontFamily(fontFamilyStr string) (*canvas.FontFamily, error) {
 	var fontFamily *canvas.FontFamily
 	switch fontFamilyStr {
@@ -191,6 +194,12 @@ func ParseFontFamily(fontFamilyStr string) (*canvas.FontFamily, error) {
 	case "fraunces":
 		fontFamily = canvas.NewFontFamily("Fraunces")
 		if err := fontFamily.LoadFont(Fraunces, 0, canvas.FontRegular); err != nil {
+			log.Println("Failed to load AdventPro font: ", err)
+			panic("Font loading error")
+		}
+	case "pilowlava":
+		fontFamily = canvas.NewFontFamily("Pilowlava")
+		if err := fontFamily.LoadFont(Pilowlava, 0, canvas.FontRegular); err != nil {
 			log.Println("Failed to load AdventPro font: ", err)
 			panic("Font loading error")
 		}

@@ -8,6 +8,51 @@ import (
 	"github.com/tdewolff/canvas"
 )
 
+// rectangleDefs returns the SVG defs content (filters and gradients) for depth effects.
+// Coordinates are in inches. Values tuned for clearly visible depth.
+func rectangleDefs() string {
+	return `
+  <!-- Inner shadow for V-carved border groove: stronger recessed look -->
+  <filter id="groove-shadow" x="-50%" y="-50%" width="200%" height="200%">
+    <feComponentTransfer in="SourceAlpha">
+      <feFuncA type="table" tableValues="1 0"/>
+    </feComponentTransfer>
+    <feGaussianBlur stdDeviation="0.08"/>
+    <feOffset dx="0.06" dy="0.06" result="offsetblur"/>
+    <feFlood flood-color="#000000" flood-opacity="0.65" result="color"/>
+    <feComposite in2="offsetblur" operator="in"/>
+    <feComposite in2="SourceAlpha" operator="in"/>
+    <feMerge>
+      <feMergeNode in="SourceGraphic"/>
+      <feMergeNode/>
+    </feMerge>
+  </filter>
+
+  <!-- Inner shadow for engraved text: more visible carved effect -->
+  <filter id="text-engrave" x="-50%" y="-50%" width="200%" height="200%">
+    <feComponentTransfer in="SourceAlpha">
+      <feFuncA type="table" tableValues="1 0"/>
+    </feComponentTransfer>
+    <feGaussianBlur stdDeviation="0.06"/>
+    <feOffset dx="0.04" dy="0.04" result="offsetblur"/>
+    <feFlood flood-color="#000000" flood-opacity="0.7" result="color"/>
+    <feComposite in2="offsetblur" operator="in"/>
+    <feComposite in2="SourceAlpha" operator="in"/>
+    <feMerge>
+      <feMergeNode in="SourceGraphic"/>
+      <feMergeNode/>
+    </feMerge>
+  </filter>
+
+  <!-- Surface lighting gradient: stronger highlight and shade for depth -->
+  <linearGradient id="surface-highlight" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="white" stop-opacity="0.18"/>
+    <stop offset="50%" stop-color="white" stop-opacity="0.06"/>
+    <stop offset="100%" stop-color="black" stop-opacity="0.12"/>
+  </linearGradient>
+`
+}
+
 func drawRectangle(
 	width float64,
 	height float64,
@@ -25,29 +70,45 @@ func drawRectangle(
 	// Initialize SVG builder
 	builder := svgutils.NewSVGBuilder(width, height)
 
+	if !strokeOnly {
+		builder.AddDefs(rectangleDefs())
+	}
+
 	// Add the outer edge
 	outerEdge := canvas.RoundedRectangle(width, height, 0.25)
 	outerEdge = outerEdge.ReplaceArcs()
 	builder.StartGroup("Outer Edge", map[string]string{})
-	builder.AddPath(outerEdge.ToSVG(), map[string]string{
+	outerEdgeAttrs := map[string]string{
 		"fill":         map[bool]string{true: "none", false: backgroundColor}[strokeOnly],
 		"id":           "outer-edge",
 		"stroke":       map[bool]string{true: "black", false: "none"}[strokeOnly],
 		"stroke-width": "0.025",
-	})
+	}
+	if !strokeOnly {
+		outerEdgeAttrs["filter"] = "url(#sign-shadow)"
+	}
+	builder.AddPath(outerEdge.ToSVG(), outerEdgeAttrs)
 	builder.EndGroup()
 
 	// Add the rounded edge
 	roundedEdge := canvas.RoundedRectangle(width-0.5, height-0.5, 0.2)
 	roundedEdge = roundedEdge.Translate(0.25, 0.25)
 	roundedEdge = roundedEdge.ReplaceArcs()
+	roundedEdgePath := roundedEdge.ToSVG()
 	builder.StartGroup("Rounded Edge", map[string]string{})
-	builder.AddPath(roundedEdge.ToSVG(), map[string]string{
+	builder.AddPath(roundedEdgePath, map[string]string{
 		"fill":         map[bool]string{true: "none", false: foregroundColor}[strokeOnly],
 		"id":           "rounded-edge",
 		"stroke":       map[bool]string{true: "black", false: "none"}[strokeOnly],
 		"stroke-width": "0.025",
 	})
+	if !strokeOnly {
+		builder.AddPath(roundedEdgePath, map[string]string{
+			"fill":   "url(#surface-highlight)",
+			"id":     "rounded-edge-highlight",
+			"stroke": "none",
+		})
+	}
 	builder.EndGroup()
 
 	// Add the border
@@ -55,21 +116,29 @@ func drawRectangle(
 	borderOuter = borderOuter.Translate(0.5, 0.5)
 	borderOuter = borderOuter.ReplaceArcs()
 	builder.StartGroup("Vcarve", map[string]string{})
-	builder.AddPath(borderOuter.ToSVG(), map[string]string{
+	borderOuterAttrs := map[string]string{
 		"fill":         map[bool]string{true: "none", false: backgroundColor}[strokeOnly],
 		"id":           "my-custom-id",
 		"stroke":       map[bool]string{true: "black", false: "none"}[strokeOnly],
 		"stroke-width": "0.025",
-	})
+	}
+	if !strokeOnly {
+		borderOuterAttrs["filter"] = "url(#groove-shadow)"
+	}
+	builder.AddPath(borderOuter.ToSVG(), borderOuterAttrs)
 	borderInner := canvas.RoundedRectangle(width-1.25, height-1.25, 0.1)
 	borderInner = borderInner.Translate(0.625, 0.625)
 	borderInner = borderInner.ReplaceArcs()
-	builder.AddPath(borderInner.ToSVG(), map[string]string{
+	borderInnerAttrs := map[string]string{
 		"fill":         map[bool]string{true: "none", false: foregroundColor}[strokeOnly],
 		"id":           "my-custom-id",
 		"stroke":       map[bool]string{true: "black", false: "none"}[strokeOnly],
 		"stroke-width": "0.025",
-	})
+	}
+	if !strokeOnly {
+		borderInnerAttrs["filter"] = "url(#groove-shadow)"
+	}
+	builder.AddPath(borderInner.ToSVG(), borderInnerAttrs)
 
 	// draw text
 	numLines := len(lines)
@@ -155,12 +224,16 @@ func drawRectangle(
 			textPath = textPath.Scale(1, -1)
 			textPath = textPath.Translate(0, height)
 
-			builder.AddPath(textPath.ToSVG(), map[string]string{
+			textAttrs := map[string]string{
 				"fill":         map[bool]string{true: "none", false: backgroundColor}[strokeOnly],
 				"id":           fmt.Sprintf("text-line-%d", i),
 				"stroke":       map[bool]string{true: "black", false: "none"}[strokeOnly],
 				"stroke-width": "0.025",
-			})
+			}
+			if !strokeOnly {
+				textAttrs["filter"] = "url(#text-engrave)"
+			}
+			builder.AddPath(textPath.ToSVG(), textAttrs)
 
 			// Update currentY for the next line
 			currentY -= containerHeight + lineSpacing

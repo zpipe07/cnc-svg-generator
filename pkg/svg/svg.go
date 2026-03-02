@@ -56,8 +56,11 @@ func GenerateSVG(
 		"viewBox":        fmt.Sprintf("0 0 %f %f", width, height),
 		"xmlns":          "http://www.w3.org/2000/svg",
 		"xmlns:xlink":    "http://www.w3.org/1999/xlink",
-		"filter":         "drop-shadow(rgba(0, 0, 0, 0.5) 0px 0px 2px)",
 		"xmlns:inkscape": "http://www.inkscape.org/namespaces/inkscape",
+	}
+	// // Omit root-level CSS drop-shadow when sign uses its own SVG filter shadow (e.g. rectangle when !strokeOnly)
+	if !strokeOnly {
+		attributesToModify["filter"] = "drop-shadow(rgba(0, 0, 0, 0.5) 0px 0px 2px)"
 	}
 	// Modify or add attributes
 	modifiedSVG, err := modifyOrAddSVGAttributes(svgStr, attributesToModify)
