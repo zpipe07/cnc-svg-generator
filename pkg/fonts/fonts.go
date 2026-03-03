@@ -74,6 +74,9 @@ var Fraunces []byte
 //go:embed Pilowlava-Regular.otf
 var Pilowlava []byte
 
+//go:embed Nephilm.otf
+var Nephilm []byte
+
 func ParseFontFamily(fontFamilyStr string) (*canvas.FontFamily, error) {
 	var fontFamily *canvas.FontFamily
 	switch fontFamilyStr {
@@ -200,6 +203,12 @@ func ParseFontFamily(fontFamilyStr string) (*canvas.FontFamily, error) {
 	case "pilowlava":
 		fontFamily = canvas.NewFontFamily("Pilowlava")
 		if err := fontFamily.LoadFont(Pilowlava, 0, canvas.FontRegular); err != nil {
+			log.Println("Failed to load AdventPro font: ", err)
+			panic("Font loading error")
+		}
+	case "nephilm":
+		fontFamily = canvas.NewFontFamily("Nephilm")
+		if err := fontFamily.LoadFont(Nephilm, 0, canvas.FontRegular); err != nil {
 			log.Println("Failed to load AdventPro font: ", err)
 			panic("Font loading error")
 		}
