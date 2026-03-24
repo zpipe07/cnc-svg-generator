@@ -315,7 +315,6 @@ func drawRibbon(
 	}
 
 	if fontFamily == nil {
-		// fmt.Print("foobar")
 		log.Fatalf("error: font family is required but was not provided")
 		// return fmt.Errorf("error: font family is required but was not provided").Error()
 	}
