@@ -64,8 +64,8 @@ func DrawSign(
 		return drawDonnelly(ctx, size, width, height, foregroundColor, backgroundColor, lines, fontFamily)
 	case os.Getenv("RIBBON_PRODUCT_ID"):
 		return drawRibbon(size, width, height, foregroundColor, backgroundColor, lines, fontFamily, strokeOnly, ctx)
-	case os.Getenv("FOOBAR_PRODUCT_ID"):
-		return drawFoobar(width, height, foregroundColor, backgroundColor, lines, fontFamily, strokeOnly)
+	case os.Getenv("LAUREL_PRODUCT_ID"):
+		return drawLaurel(width, height, foregroundColor, backgroundColor, lines, fontFamily, strokeOnly)
 	default:
 		// return "Invalid product ID: " + productId
 		panic("Invalid product ID: " + productId)
