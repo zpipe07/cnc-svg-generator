@@ -1,0 +1,22 @@
+---
+description: Go conventions and layout for this repo
+globs: "**/*.go"
+alwaysApply: false
+---
+
+# Go conventions
+
+- **Layout:** Use `pkg/` for libraries; add new `pkg/<name>` packages as needed. Thin `cmd/<app>/main.go` only wires env, router, and `Run()`.
+- **Entry point:** Primary binary is [`cmd/server/main.go`](cmd/server/main.go) (Air builds this). [`main.go`](main.go) at repo root mirrors it — keep in sync or delete the duplicate to avoid drift.
+- **HTTP errors:** Prefer `c.JSON(http.Status…, gin.H{"error": "…"})` for bad requests. Avoid introducing new `panic` paths for invalid client input (existing `DrawSign` default still panics on unknown product — treat as tech debt).
+- **Config:** Server bind uses `HOST` + `PORT` from env. Product routing uses `*_PRODUCT_ID` env vars (see `pkg/signs/signs.go`).
+- **Fonts:** New font assets go under `pkg/fonts/` with `//go:embed` and registration in [`pkg/fonts/fonts.go`](pkg/fonts/fonts.go) (`ParseFontFamily`).
+- **Tests:** No `*_test.go` files yet; new code should add table-driven tests in the same package where practical.
+
+```go
+// Prefer explicit handler errors:
+if err != nil {
+  c.JSON(http.StatusBadRequest, gin.H{"error": "short message"})
+  return
+}
+```

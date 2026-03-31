@@ -1,0 +1,15 @@
+---
+description: SVG pipeline in pkg/svg (canvas → string → response)
+globs: pkg/svg/*.go
+alwaysApply: false
+---
+
+# SVG generation (`pkg/svg`)
+
+- **Orchestrator:** [`svg.go`](pkg/svg/svg.go) — creates a `canvas.Canvas`, calls `signs.DrawSign`, exports to SVG string, then post-processes.
+- **Post-processing:** `modifyOrAddSVGAttributes` (and related) set root `<svg>` attributes (e.g. `viewBox`, `xmlns`), optional CSS filter for drop shadow, and normalize output for clients.
+- **Handler contract:** Gin sets `Content-Type: image/svg+xml` on success (see `pkg/app/handlers.go` `GetSvg`).
+- **Helpers:** [`attributes.go`](pkg/svg/attributes.go), [`colors.go`](pkg/svg/colors.go), [`text.go`](pkg/svg/text.go) — attribute tweaks, color parsing, text helpers.
+- **Legacy:** [`product.go`](pkg/svg/product.go) is largely commented-out; prefer extending `pkg/signs` for new product behavior unless reviving that design.
+
+When changing export behavior, verify both canvas-exported markup and any string replacements still produce valid SVG for CNC tooling.

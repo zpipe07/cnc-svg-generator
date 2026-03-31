@@ -1,0 +1,20 @@
+---
+description: How to add or change sign products in pkg/signs
+globs: pkg/signs/*.go
+alwaysApply: false
+---
+
+# Sign / product development
+
+- **Dispatcher:** [`pkg/signs/signs.go`](pkg/signs/signs.go) `DrawSign` switches on `productId` against `os.Getenv("<NAME>_PRODUCT_ID")`. Add a `case` for each new product.
+- **Per-sign files:** Implement `drawEllipse`, `drawRectangle`, etc. in dedicated files. Function signatures vary: some take `*canvas.Context` as first arg, some take it last — follow the pattern of the closest existing sign.
+- **Parameters passed into `DrawSign`:** `ctx`, `productId`, `size`, `width`, `height`, `foregroundColor`, `backgroundColor`, `lines`, `fontFamily`, `strokeOnly` — thread what your drawer needs from the switch.
+- **Drawing:** Use [`github.com/tdewolff/canvas`](https://github.com/tdewolff/canvas) (`Context` paths, text, fill/stroke). Alternatively, build raw SVG with [`pkg/svgutils`](pkg/svgutils/svgutils.go) `SVGBuilder` where the canvas API is awkward.
+- **Colors:** Shared helpers in [`pkg/signs/colors.go`](pkg/signs/colors.go); HTTP-facing parsing lives under `pkg/svg` (e.g. `ParseColor`).
+- **Env:** Document new `YOURSIGN_PRODUCT_ID` in README or internal deploy docs when adding a case.
+
+```go
+// In signs.go — pattern:
+case os.Getenv("NEW_PRODUCT_ID"):
+  return drawNewSign(ctx, size, width, height, foregroundColor, backgroundColor, lines, fontFamily, strokeOnly)
+```

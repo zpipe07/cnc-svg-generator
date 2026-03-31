@@ -1,0 +1,29 @@
+---
+description: Core project context for cnc-svg-generator (architecture, stack, flow)
+alwaysApply: true
+---
+
+# cnc-svg-generator — overview
+
+**Purpose:** HTTP API that generates CNC-oriented SVG artwork for multiple sign/product types.
+
+**Stack:** Go 1.23, [Gin](https://github.com/gin-gonic/gin), [godotenv](https://github.com/joho/godotenv), [tdewolff/canvas](https://github.com/tdewolff/canvas) for 2D drawing and SVG export.
+
+**Layout:**
+
+| Area | Role |
+|------|------|
+| `cmd/server/` | Entry point (used by Air) |
+| `pkg/app/` | Gin server, routes, `GetSvg` handler |
+| `pkg/svg/` | Orchestrates canvas → `signs.DrawSign` → post-processes SVG string |
+| `pkg/signs/` | One file per product; `DrawSign` dispatches on env-backed product IDs |
+| `pkg/fonts/` | Embedded fonts (`//go:embed`) |
+| `pkg/svgutils/` | Imperative SVG string builder for some signs |
+
+**Local dev:** Run with `air` (see `.air.toml`). Configure `.env` (gitignored): `HOST`, `PORT` (default 8080), and `*_PRODUCT_ID` vars per sign.
+
+**Deploy:** Staging typically auto-deploys on push to `main` (Render). Production: GitHub Release publishes trigger Render via `RENDER_PRODUCTION_DEPLOY_HOOK` (see `.github/workflows/deploy-production.yml`).
+
+**Request flow:** `GET /v1/api/svg` → query params (`productId`, `width`, `height`, `text[]`, `size`, `fontFamily`, colors, `strokeOnly`) → `svg.GenerateSVG` → `signs.DrawSign` → response `Content-Type: image/svg+xml`.
+
+**Note:** Root `main.go` duplicates `cmd/server/main.go`; Air builds only `cmd/server/main.go`.
