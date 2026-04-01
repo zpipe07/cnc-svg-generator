@@ -228,7 +228,7 @@ func drawRecurso(
 
 		for i, line := range lines {
 			containerHeight := containerHeights[i]
-			container := canvas.Rectangle(width-3.0, containerHeight)
+			container := canvas.Rectangle(width-3.25, containerHeight)
 			containerBounds := container.Bounds()
 			containerX := width/2 - containerBounds.W()/2
 			containerY := currentY - containerHeight
@@ -253,23 +253,21 @@ func drawRecurso(
 				log.Fatalf("Failed to convert text to path: %s", err)
 			}
 			textBounds := textPath.Bounds()
-			metrics := face.Metrics()
-			ascent := metrics.Ascent
-			descent := metrics.Descent
 
 			// Scale the text to fit within the container
 			scale := min(containerBounds.W()/textBounds.W(), containerBounds.H()/textBounds.H())
-			textPath.Scale(scale, scale)
+			textPath = textPath.Scale(scale, scale)
 
-			// Recalculate text position after scaling
+			// Recalculate text bounds after scaling to get actual rendered dimensions
 			textBounds = textPath.Bounds()
-			x := containerX +
-				containerBounds.W()/2 -
-				textBounds.W()/2
-			y := containerY +
-				containerBounds.H()/2 +
-				descent*scale -
-				((ascent + descent) / 2 * scale)
+
+			// Center using glyph bounds (same as rectangle.go, fleur.go, laurel.go)
+			centerX := containerX + containerBounds.W()/2
+			centerY := containerY + containerBounds.H()/2
+			textCenterX := textBounds.X0 + textBounds.W()/2
+			textCenterY := textBounds.Y0 + textBounds.H()/2
+			x := centerX - textCenterX
+			y := centerY - textCenterY
 			textPath = textPath.Translate(x, y)
 			textPath = textPath.Scale(1, -1)
 			textPath = textPath.Translate(0, height)
