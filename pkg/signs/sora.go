@@ -143,7 +143,7 @@ func getCurveParamsForTopLine(width float64, containerCenterY float64, arcWidth 
 	centerX := width / 2
 
 	// Fixed angle span (20°) - curvature stays the same for any number of characters
-	const angleSpan = math.Pi / 9
+	const angleSpan = math.Pi / 7
 
 	// Arc centered at 12 o'clock: chord = arcWidth
 	// radius from chord: chord = 2*r*sin(θ/2) => r = chord/(2*sin(θ/2))
@@ -401,7 +401,7 @@ func drawSora(
 			}
 		case 2:
 			containerDimensions = []ContainerDimensions{
-				{Height: availableHeight * 0.7, Width: width - 5.0},
+				{Height: availableHeight * 0.7, Width: width - 3.0},
 				{Height: availableHeight * 0.3, Width: width - 2.75},
 			}
 		default:
@@ -426,13 +426,13 @@ func drawSora(
 			container = container.Scale(1, -1)
 			container = container.Translate(0, height)
 
-			builder.AddPath(container.ToSVG(), map[string]string{
-				"fill":   "none",
-				"stroke": "none",
-				// "stroke":       "pink",
-				// "stroke-width": "0.025",
-				"id": fmt.Sprintf("text-container-%d", i),
-			})
+			// builder.AddPath(container.ToSVG(), map[string]string{
+			// 	"fill": "none",
+			// 	// "stroke": "none",
+			// 	"stroke":       "pink",
+			// 	"stroke-width": "0.025",
+			// 	"id":           fmt.Sprintf("text-container-%d", i),
+			// })
 
 			fontSize := 1.0
 			face := fontFamily.Face(fontSize, canvas.FontRegular, canvas.FontNormal)
