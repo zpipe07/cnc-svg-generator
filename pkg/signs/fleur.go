@@ -257,12 +257,12 @@ func drawFleurText(
 			textPath = textPath.Scale(1, -1)
 			textPath = textPath.Translate(0, height)
 
-		builder.AddPath(textPath.ToSVG(), map[string]string{
-			"fill":         map[bool]string{true: "none", false: backgroundColor}[strokeOnly],
-			"id":           fmt.Sprintf("text-line-%d", i),
-			"stroke":       map[bool]string{true: "black", false: "none"}[strokeOnly],
-			"stroke-width": "0.025",
-		})
+			builder.AddPath(textPath.ToSVG(), map[string]string{
+				"fill":         map[bool]string{true: "none", false: backgroundColor}[strokeOnly],
+				"id":           fmt.Sprintf("text-line-%d", i),
+				"stroke":       map[bool]string{true: "black", false: "none"}[strokeOnly],
+				"stroke-width": "0.025",
+			})
 
 			// Update currentY for the next line
 			currentY -= containerDimensions.Height + lineSpacing
@@ -296,7 +296,7 @@ func drawFleur(
 	} else if size == "medium" {
 		drawMediumFleur(builder, foregroundColor, backgroundColor, strokeOnly)
 	} else {
-		log.Fatalf("Invalid size: %s", size)
+		log.Printf("Invalid size: %s", size)
 	}
 
 	drawFleurText(

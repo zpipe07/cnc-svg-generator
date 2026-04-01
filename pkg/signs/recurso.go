@@ -157,38 +157,36 @@ func drawRecurso(
 
 	if numLines > 0 {
 		// Calculate the total height for the text containers
-		const topPadding = 4.5
+		const topPadding = 4.0
 		const bottomPadding = 1.5
 		lineSpacing := 0.35
 		availableHeight := height - (topPadding + bottomPadding) - float64(numLines-1)*lineSpacing
 
-		// Determine the heights for each line
-		var containerHeights []float64
+		// Determine dimensions for each line
+		type ContainerDimensions struct {
+			Width  float64
+			Height float64
+		}
+		var containerDimensions []ContainerDimensions
 		switch numLines {
-		case 3:
-			containerHeights = []float64{
-				availableHeight * 0.25, // First line
-				availableHeight * 0.5,  // Middle line (taller)
-				availableHeight * 0.25, // Last line
-			}
 		case 2:
-			containerHeights = []float64{
-				availableHeight * 0.6, // First line (taller)
-				availableHeight * 0.4, // Last line
+			containerDimensions = []ContainerDimensions{
+				{Height: availableHeight * 0.5, Width: width - 6.0},
+				{Height: availableHeight * 0.5, Width: width - 3.0},
 			}
 		default:
-			containerHeights = []float64{availableHeight} // Single line
+			containerDimensions = []ContainerDimensions{{Height: availableHeight, Width: width - 3.25}}
 		}
 
 		// Calculate the starting y position for the topmost line
 		currentY := height - topPadding
 
 		for i, line := range lines {
-			containerHeight := containerHeights[i]
-			container := canvas.Rectangle(width-3.25, containerHeight)
+			dim := containerDimensions[i]
+			container := canvas.Rectangle(dim.Width, dim.Height)
 			containerBounds := container.Bounds()
 			containerX := width/2 - containerBounds.W()/2
-			containerY := currentY - containerHeight
+			containerY := currentY - dim.Height
 
 			// Position the container
 			container = container.Translate(containerX, containerY)
@@ -236,7 +234,7 @@ func drawRecurso(
 			})
 
 			// Update currentY for the next line
-			currentY -= containerHeight + lineSpacing
+			currentY -= dim.Height + lineSpacing
 		}
 	}
 	// for i, line := range lines {

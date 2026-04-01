@@ -373,7 +373,7 @@ func drawSora(
 	} else if size == "small" {
 		drawSmallSora(builder, foregroundColor, backgroundColor, strokeOnly)
 	} else {
-		log.Fatalf("Invalid size: %s", size)
+		log.Printf("Invalid size: %s", size)
 	}
 
 	// Add the text

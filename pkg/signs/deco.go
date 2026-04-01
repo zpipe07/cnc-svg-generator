@@ -280,7 +280,7 @@ func drawDeco(
 	} else if size == "large" {
 		drawLargeDeco(builder, foregroundColor, backgroundColor, strokeOnly)
 	} else {
-		log.Fatalf("Invalid size: %s", size)
+		log.Printf("Invalid size: %s", size)
 	}
 
 	drawText(

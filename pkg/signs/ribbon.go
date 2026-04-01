@@ -329,7 +329,7 @@ func drawRibbon(
 		drawExtraSmallVerticalRibbon(builder, width, height, foregroundColor, backgroundColor, strokeOnly)
 		drawExtraSmallVerticalRibbonText(builder, width, height, backgroundColor, lines, fontFamily, strokeOnly, ctx)
 	} else {
-		log.Fatalf("Invalid size: %s", size)
+		log.Printf("Invalid size: %s", size)
 	}
 
 	// builder.EndGroup()

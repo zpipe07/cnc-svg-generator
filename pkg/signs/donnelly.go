@@ -257,7 +257,6 @@ func drawDonnelly(
 	} else if size == "extra small vertical" {
 		drawExtraSmallVertical(builder, foregroundColor, backgroundColor)
 	} else {
-		// log.Fatalf("Invalid size: %s", size)
 		log.Printf("Invalid size: %s", size)
 	}
 
