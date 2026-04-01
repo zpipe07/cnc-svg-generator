@@ -158,9 +158,14 @@ func drawRecurso(
 	if numLines > 0 {
 		// Calculate the total height for the text containers
 		const topPadding = 4.0
+		const extraTopPaddingSingleLine = 0.5 // nudge single-line text down from the top
 		const bottomPadding = 1.5
 		lineSpacing := 0.35
-		availableHeight := height - (topPadding + bottomPadding) - float64(numLines-1)*lineSpacing
+		topInset := topPadding
+		if numLines == 1 {
+			topInset += extraTopPaddingSingleLine
+		}
+		availableHeight := height - (topInset + bottomPadding) - float64(numLines-1)*lineSpacing
 
 		// Determine dimensions for each line
 		type ContainerDimensions struct {
@@ -175,11 +180,13 @@ func drawRecurso(
 				{Height: availableHeight * 0.5, Width: width - 3.0},
 			}
 		default:
-			containerDimensions = []ContainerDimensions{{Height: availableHeight, Width: width - 3.25}}
+			containerDimensions = []ContainerDimensions{
+				{Height: availableHeight, Width: width - 3.25},
+			}
 		}
 
 		// Calculate the starting y position for the topmost line
-		currentY := height - topPadding
+		currentY := height - topInset
 
 		for i, line := range lines {
 			dim := containerDimensions[i]
